@@ -1,0 +1,24 @@
+*******************************
+Example_class
+*******************************
+-private_var1: type
+var2: type
+var3: type
+*******************************
+Example_class(param1, param2, param3)
+method2(param1: type, param2: type, param3: type): return_type
+-helper_method3(): return_type
+*******************************
+
+
+
+
+
+
+NOTES
+traditionally, a visual chart should be made but if using .txt the above strategy is accaptable
+if type is None....use "None"
+if type is list...use "[]"
+if type is bool...use "bool"
+if parameters is empty...use method_example()
+use "-" to indicate private variables...ie. -var1: type
