@@ -583,7 +583,7 @@ public static bool methodName(int param1, int param2) { // need to include bool 
 ```
 * if argument to an method is an array, must also include `[]` after the type
     ```java
-    public static bool methodName(int[] array1) {
+    public static bool methodName(int[] array1) {}
     ```
 * **stepwise refinement** - top-down stratety, starting with overall goal, then breaking down into smaller tasks
  
@@ -630,10 +630,7 @@ void main() {
     myArray[0] = 5.5;//similar to python
     myArray[1] = 2.35;
 
-    string[] ArrayInitializer = {"hello", "world"};
-
-    reportArray(myArray);
-    reportArray(ArrayInitializer);
+    string[] ArrayInitializer = {"hello", "world"};//
 }
 ```
 * to make a copy of an array, can't just simply do `array2 = array1` since that would just make a new variable name for `array1`
@@ -658,6 +655,42 @@ void main() {
         * `Array.stream(arr1).max()` -> max
         * `Array.stream(arr1).sum()` -> sum
         * `Array.stream(arr1).average()` -> avg
+
+* **multi-dimensional arrays**
+```java
+* types:
+    * square 3x3
+    * rectangle 2x5
+    * ragged 4,1,3,2
+        ```java
+        {
+        {4,4,4,4},
+        {1},
+        {3,3,3},
+        {2,2}
+        }
+        ```
+
+import java.util.Arrays
+int[][] squareArray = new int[3][5]; //[outer][inner]
+int fillValue = 1;
+for (int[] row : squareArray) {
+    Arrays.fill(row, fillValue);//fills each index in inner [] (more efficient that setting up multiple nested for loops)
+    fillVallue++;
+//  output:[
+//      [1,1,1,1,1]
+//      [2,2,2,2,2]
+//      [3,3,3,3,3]
+//  ]
+}
+//ARRAY INITIALIZER
+int[][] raggedArray = {
+        {4,4,4,4},
+        {1},
+        {3,3,3},
+        {2,2}
+    };
+```
 
 </details>
 
@@ -901,6 +934,27 @@ void main() {
         + currentSecond + "GMT");
 }
 ```
+</details>
+
+***
+### Classes & Objects
+<details><summary></summary>
+
+* To build a constructor, make a method out of the class
+* Do not use `static` in the constructor methods as those will not be applied to any instances.
+    * *exception* -> **constants** should use `static` to avoid memory consumption
+* don't forget to overload if wanting option for parameters or not
+    ```java
+    class Cirlce {
+        double radius;
+        Circle() {
+            radius = 1;
+        }
+        Circle(double initialRadius) {
+            radius = initialRadius;
+        }
+    }
+    ```
 </details>
 
 ***
