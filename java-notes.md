@@ -1,18 +1,23 @@
-## Java 25:
+### Java 25:
+* added implicily declared Classes -> removed need to delcare visibility (ie. public/private/protected) and/or constructor status (ie. static)
+    * if `static` is ommited -> defalts to constructor
+    * if `public`/`private`/`protected` is ommited, defaults to package private (private but still public to same package)
+        * `protected` allows sublasses in other packages to also have access
+        * in overridden attributes/methods may not decrease visiblity
+    * works for any method...also removes need to declare class only for single file entry points.
 ```java
-void main() {
+void main() {// NOTE! omitting static actually creates an instance of main
     System.out.println("Hello, World!");
 }
 ```
-where the old method would require setting up a class and declaring both the class and the method as public. If public is not declared it is private however Java25 ad an exception allowing the JVM to run the main method
-## Java 21:
+where the old method would require setting up a class and declaring both the class and the method as public. If public is not declared it is package private however Java25 makes an exception allowing the JVM to run the main method
+### Java 21:
 ```java
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
 }
-
 ```
 </details>
 
@@ -150,6 +155,15 @@ char c = (char) i; //<- needs type casting since `i` "could" be outside of char 
 |  54     |   6   |  78     | N    | 102     | f    | 126     | ~    |
 |  55     |   7   |  79     | O    | 103     | g    |         |      |
 
+* **primitive Object wrappers**
+    * can assign variable to a wrapper without using a constructor due to auto boxing/unboxing (constructor is depricated)
+        * boxing -> `Integer var1 = 3`
+        * unboxing -> `int var2 = var1`
+    * to compare two of the same object, use `obj1.compareTo(obj2)`
+        * returns `-1` if **obj1** is less than **obj2**
+        * returns `0` if equal
+        * returns `1` if **obj2** is less than **obj1**
+
 </details>
 
 ***
@@ -200,7 +214,10 @@ char c = (char) i; //<- needs type casting since `i` "could" be outside of char 
         String var1 = "12345";
         int var2 = Integer.parseInt(var1);
         ```
+    * **Alternativly** use `.valueOf(str)` ie. `Integer.valueOf("67")`
+        * returns a wrapper object unlike .parseInt() which returns a primitive
 * `int`/`double`/`float` -> `String` (**use a String formatter**)
+    * **Alternativly** use `String.valueOf(int var1)` asuming `var1` is an **int**
 </details>
 
 ***
@@ -214,16 +231,43 @@ char c = (char) i; //<- needs type casting since `i` "could" be outside of char 
     var1 = 25; //assignment (ie. allocated memory)
     ```
 * may include `final` for constants to enforce immutability
-* may include`static` to make variable available to every instance of class
-* may include `public` to make variable global to any class within project
-* **scope** -> if declared in a loop, it is local (will return in error if attempted to access outside if not declared also outside of loop)
-```java
-void main() {
-    static final double radius = 20;
-    double diameter = radius * 2;
-    System.out.println("diameter is " + diameter);
-}
-```
+* **scope** -> if declared in a loop, it is local only to that loop
+    ```java
+    void main() {
+        final double RADIUS = 20;
+        double diameter = RADIUS * 2;
+        System.out.println("diameter is " + diameter);
+    }
+    ```
+* may include`static` to make variable available to every instance of class **ONLY** if outside of a method regardless if method is static or not
+    * **NOTE!!** `static` methods can only access `static` variables or variables local to method
+* may include `public` to make variable global to any class within project **ONLY** if outside of a method
+    ```java
+    public class Example {
+        public static final double RADIUS = 20;
+        final String CONSTANT = "can't be access by static methods";
+
+        void main() {// can access CONSTANT and RADIUS
+            System.out.println("diameter is " + get_diameter());
+        }
+        static double get_diameter() {// can NOT access CONSTANT
+            return RADIUS * 2;
+        }
+    }
+    ```
+    ```java
+    public class Example {
+        public final double RADIUS = 20;
+        final String CONSTANT = "can't be access by static methods";
+
+        void main() {// can access CONSTANT and RADIUS
+            System.out.println("diameter is " + get_diameter());
+        }
+        double get_diameter() {// can NOT access CONSTANT
+            return RADIUS * 2;
+        }
+    }
+    ```
 </details>
 
 ***
@@ -258,6 +302,7 @@ void main() {
 
 * very similar to a `Scanner` as `Random` is also located in `java.util`
     * `.Random()` -> max range for data type, unless arguments are used ie. `rng.nextInt(11)` -> range is [0,10)
+    * pass a number into the arguments for a seed ie. `Random(452)`
     ```java
     import java.util.Random;
     void main() {
@@ -270,13 +315,17 @@ void main() {
         * `.nextInt(max)`                             -> range is [0,max)
         * `.nextInt(max + 1)`                         -> range is [0, max]
         * `min + .nextInt(max - min + 1)`             -> range is [min, max]
+        * **alternative** pass a bound into argument, works only for **int**
+            `.nextInt(max)`           -> range is [0, max)
+            `.nextInt(max + 1)`       -> range is [0, max]
+            `.nextInt(max - min + 1)` -> range is [min, max]
     * `.nextDouble()` <- can't use parameters like with `nextInt()`
         * `nextDouble() * (max + 1e-10)`              -> range is [0, max]
         * `min + .nextDouble() * (max - min + 1e-10)` -> range is [min, max]
  
 * may also use `Math.random()`                        -> returns a **double** in range **[0,1)**
-    * `Math.random() * max`                           -> returns a **double** in range **[0,max)**
-    * `(int) (Math.random() * (max + 1))`             -> returns an **int** in range **[0, max]**
+    * `Math.random() * max`                           -> returns a **double** in range **[0,max)** 
+    * `(int) (Math.random() * (max + 1))`             -> returns an **int** in range **[0, max]**  (**USE `()` AROUND EXPRESSION ELSE ONLY ZERO WILL RETURN**)
     * `min + (int) (Math.random() * (max - min + 1))` -> returns an **int** in range **[min, max]**
     * `min + Math.random() * (max - min + 1e-10)`     -> returns a **double** in range **[min, max]**
 </details>
@@ -334,6 +383,7 @@ void main() {
     * **falling through** may be mimiced with a comma `,`
     * if no action should be taken, must include empty `{}`
     * if multiple statements, should include a code block with `{}`
+    * may use `yield` for conditionals `case -> {if (true) {yield 5;} else {yield 7;}}`
     * exmaple with all compatible data types
     ```java
     public class SwitchAllCompatibleTypes {
@@ -432,9 +482,7 @@ void main() {
 void main() {
     do {
         // statements to do before while loop
-    } while (var1 > 0) {//if false, does not go back to 'do'
-        // statements if true
-    } 
+    } while (var1 > 0);//NO EXTRA STATEMENTS
 }
 ```
 * `for` loops syntaxt inside the `()` with `for ()` has three parts
@@ -572,6 +620,15 @@ Notes:
 ### methods
 <details><summary></summary>
 
+* **NOTE!* -> `public` or `private` is not requried except for `main()` which requires `public`
+
+| Modifier   | Visible to same Class | Visible to same Package | Visible to Subclasses | Visible to World |
+|------------|-----------------------|-------------------------|-----------------------|------------------|
+| public     | Yes                   | Yes                     | Yes                   | Yes              |
+| protected  | Yes                   | Yes                     | Yes                   | No               |
+| (No label) | Yes                   | Yes                     | No                    | No               |
+| private    | Yes                   | No                      | No                    | No               |
+
 ```java
 void main() {
     System.out.println("my method will return: ", methodName(6, 18));
@@ -670,6 +727,14 @@ void main() {
         {2,2}
         }
         ```
+* To store objects in an array, must first initialize array with the data type of the object being its class
+    ```java
+    //lets Circle be a class
+    Circle[] arrayCircles = new Circle[5];// [null, null, null, null, null] -> no circles have yet been created
+    for (int i = 0; i < arrayCircles.length; i++) {
+        arrayCircles[i] = new Circle();
+    }
+    ```
 
 import java.util.Arrays
 int[][] squareArray = new int[3][5]; //[outer][inner]
@@ -691,6 +756,33 @@ int[][] raggedArray = {
         {2,2}
     };
 ```
+
+#### Array List
+* must first `import java.util.ArrayList;`
+* can't do `ArrayList shapes = new ArrayList();` since this doesn't describe the nested type inside `ArrayList`
+    * INSTEAD use `<>` to pass type held inside ArrayList
+    * must use `.add()` to append new entries
+    * indecies inside ArrayList are private. Can't access with `shapes[i]`
+        * use `.get(i)` for read access
+        * use `.set(i, "new value")` for write access
+        * use `.size()` instead of `len()` for a for loop
+            * may also use for each loop
+    ```java
+    import java.util.ArrayList;
+    void main() {
+        ArrayList<String> shapes = new ArrayList<>();
+        shapes.add("Circle");
+        shapes.add("Square");
+
+
+        for (int i = 0; i < shapes.size(); i++)
+            shapes.set(i, "shape" + i)//renamed with set()
+
+        for (String i : shapes) {
+            System.out.println(i)
+        }
+    }
+    ```
 
 </details>
 
@@ -934,6 +1026,45 @@ void main() {
         + currentSecond + "GMT");
 }
 ```
+```java
+import java.util.ArrayList;
+import java.math.*;
+
+void main(String[] args) {
+    ArrayList<Number> list = new ArrayList<>();
+    list.add(42);
+    list.add(1337.33);
+    list.add(new BigInteger("123456789123456789012345678912345678912345"));
+    list.add(new BigDecimal("3.1415926535897932384626433832795028841971"));
+
+    System.out.printf("The largest number is: %s\n", getLargestNumber(list));
+}
+
+/**
+* Finds the largest number in a list of mixed types without losing precision.
+*/
+public static BigDecimal getLargestNumber(ArrayList<Number> list) {
+    // 1. Safety check for empty or null lists
+    if (list.isEmpty()) {
+        return null;
+    }
+
+    // 2. Initialize "biggest" using the first element
+    BigDecimal biggest = new BigDecimal(list.get(0).toString());
+
+    for (Number n : list) {
+        // 3. Convert current number to BigDecimal for a precise comparison
+        BigDecimal currentVal = new BigDecimal(n.toString());
+
+        // 4. Compare currentVal to our running champion
+        if (currentVal.compareTo(biggest) > 0) {
+            biggest = currentVal;
+        }
+    }
+    
+    return biggest;
+}
+```
 </details>
 
 ***
@@ -941,20 +1072,495 @@ void main() {
 <details><summary></summary>
 
 * To build a constructor, make a method out of the class
-* Do not use `static` in the constructor methods as those will not be applied to any instances.
-    * *exception* -> **constants** should use `static` to avoid memory consumption
+* `static` if used on method or attribute will keep use/functionality agnostic of instances
+    * handy uses
+        * **constants** should use `static` to avoid memory consumption(else realocates for each instance)
+        * iterating variable to count number of created instances, or even a list of all instances...one benefit is ommits need for variables to access instances
+        ```java
+        import java.util.ArrayList;
+        import java.util.List;
+
+        public class Player {
+            private String name;
+
+            // The Static List: Shared by the entire class with the class name 'Player' as the type
+            public static List<Player> allPlayers = new ArrayList<>();
+
+            public Player(String name) {//initialize constructor
+                this.name = name;
+                // Every time 'new Player()' is called, the object adds itself (this) to the list.
+                allPlayers.add(this);
+            }
+            public String getName() {
+                return name;
+            }
+            void main() {//initializing instances..notice -> no need for variables
+                new Player("Alice");
+                new Player("Bob");
+                new Player("Charlie");
+
+                //acessing data
+                System.out.println("Total players: " + Player.allPlayers.size());//getting number of instances
+                for (Player p : Player.allPlayers) {//accessing each instance
+                    System.out.println("Stored Player: " + p.getName());
+                }
+            }
+        }
+        ```
+
+* Does not return any thing, ie. no **return type** or `void`
+    * if used, will be treated as a normal class method instead of a constructor
 * don't forget to overload if wanting option for parameters or not
     ```java
     class Cirlce {
         double radius;
-        Circle() {
-            radius = 1;
+        Circle() {radius = 1;}//constructor
+        Circle(double initialRadius) {radius = initialRadius; }//overloaded constructor
+
+        double getArea() {return Math.PI * radius * radius; }//instance method
+        double getPerimeter() {return 2 * Math.PI * radius; }
+        void setRadius(double newRadius) {radius = newRadius; }
+    }
+    ```
+    * use `new` to create a new object/instance of Class
+        ```java
+        void main(){
+            Circle c1 = new Circle();
+            Circle c2 = new Circle(4);//using overloaded constructor
         }
-        Circle(double initialRadius) {
-            radius = initialRadius;
+        ```
+
+* `this` is needed in cases where shadowing is used. But best practice is to always use it when accessing instance variables
+    * can not be used with `static` variables and methods (technically can be used inside main to access class attributes assuming static was ommited)
+    * **shadowing** is where a parameter name is the same as the class attribute name as the parameter would be called without `this`
+        * conventionally `this` is not used in getters except when needed.
+        ```java
+        public class Square {
+            int width = 5;
+            int getArea() {
+                return width * width;
+            }
+            void setArea(int width) {
+                this.width = width;
+            }
+        }
+        ```
+
+#### INHERITANCE     
+* use `final` to prevent any inheritance at the class level
+    * `final` if used just on methods/attributes prevents overriding.
+    * `Private` also prevents inheritance on methods/attributes(can't be used on a class)
+* use **child** `extends` **parent** to create a child class ie. `class Circle extends Shape {...}`
+* private attributes in parent can be modified only by methods in the parent.
+* private methods in parent are not inherited by child
+* private classes can not be inherited
+* When ANY child constructor is called, the parents' empty constructors are ALWAYS called unless `super` is used to call a specific parent constructor. Super only accesses the immediate parent.
+    * calling super can be usefull to avoid creating setters in parent if trying to keep parent attributes immutable/private
+        ```java
+        void main() {
+            Shape shape1 = new Circle();//color is black, inherited from parent default -> String() & Circle() called
+            Shape shape2 = new Circle("blue")//color is blue, only because `super()` was called
+        }
+        class Shape {
+            //define attribute
+            private String color;
+            //initialize constructors
+            Shape() {color = "black";}
+            Shape(String color) {this.color = color;}
+            //getter methods for attribute
+            String getColor() {return color;}
+        }
+        class Circle extends Shape {
+            private double radius;
+            Circle(String color) {//color overrides parent default(immediatly after parent sets to default)
+                super(color);//needed since `color` is private, if public could instead do `this.color = color;` alternativly could have made a setter in parent and called in child constructor
+                radius = 1;
+            }
+            Circle() {radius = 1;}//color default is triggered by parent
+
+            double getRadius() {return radius;}
+        }
+        ```
+    
+    * All classes by default inherit for `Object`
+        * `.toString()` automatically called when printing any object which is inherited fromm `Object`
+            * returns class name and memory location ie. `Circle@5b480cf9`
+            * if overriding to write custom method, may also call `super(toString)` to retain previous functionality
+            ```java
+            void main() {
+                System.out.println(Circle);// `.toString()` automatically appended to `Circle`
+                System.out.println(Circle.toString());// redundant example since called anyway
+            }
+
+            class Circle {//extended from `Object`
+                private String color;
+                private java.util.Date timeCreated;
+                Circle() {
+                    color = "blue";
+                    timeCreated = new java.util.Date();
+                }
+
+                @Override//reccommended since `toString` is a method of `Object`
+                toString() {//can also put @override on same line as signature
+                    return String.format("%s\nCreated on: %s\nColor: %s",
+                        super.toString(),//retains original functionality of toString ie. Circle@memoryAddress
+                        this.timeCreated,//handy modification
+                        this.color);
+                }
+            }
+            ```
+
+* Class relationships
+    * **inheritance** -> directly inherits attributes from parent (ie. superCar inherits from Car)
+    * **composition** -> creating an object inside of a different class then stored as an attribute
+        * if parent dies, child also dies (ie. factory creates car and stored in factor)
+    * **aggregation** -> pass as argument then stored as attribute
+        * if parent dies, child can remain (ie. pre-made car passed into warehouse)
+    * **association** -> interacts with secondary class, often methods (ie. car passed into driver and calls `car.drive()`)
+
+    * example: student has name and address
+        * sudent - name -> composition (UML has black diamon next to owner ie. student)
+        * student - address -> aggregation (UML has non filled white diamond next to owner ie. student)
+
+##### visibility
+* Child classes may not decrease visibility for inherited attributes/methods
+* however the child class itself may increase visibility for non inherited attributes/methods
+* the child class may itself be more visible but the inherited attributes/methods remain the same regardless of being overriden
+
+##### dynamic binding
+* A form of Polymorphism related to inheritance when child's overriten method may be found at runtime even though defined as parent ONLY when signature matches parent's method.
+    ```java
+    void main() {
+        Rectangle var1 = new Square();
+        Rectangle var2 = new Rectangle();
+        System.out.printf(var1.getArea());
+        System.out.printf(var2.getArea());
+    }
+    class Rectangle {
+        private int width = 3;
+        private int height = 4;
+        int getArea() {
+            return width * height
+        }
+    }
+    class Square extends Rectangle{
+        int side = 12;
+        @override int getArea() {
+            return side * side;
         }
     }
     ```
+* `getClass()` returns a `Class` object, which stores the information about the child class it was created as.
+    * helpful when making sure if a rectangle is also a square. Helpful in deep inheritance trees 
+    ```java
+    Rectangle var1 = new Square();
+    Rectangle var2 = new Rectangle();
+    var1.getClass().getSimpleName()//returns "Square"
+    var2.getClass().getSimpleName()//returns "Rectangle"
+    ```
+
+##### Abstract Classes/methods & Interfaces
+* attributes can NOT be abstract...but attributes are still inherited if not marked private
+* if method is marked abstract method, class must also be marked abstract
+* abstract methods enforces methods to be overriden on child classes for safe polymorphism
+* may still use `instanceof` to check of obj implements a certain interface
+```java
+protected abstract class GeometricObject {
+    abstract double getArea();//notice no {code block}
+}
+public class square extends GeometricObject {
+    private double side = 4;
+    @Override double getArea() {
+        return side * side;
+    }
+}
+```
+
+* Interfaces can store virtual functions that can be implimented by classes.
+    ie. Animal abstract class is inherited by Chicken and Tiger classes. But I could have an interface called Edible that has a method that lets you eat. Chickens might impliment Edible while also inheriting Animal but Tiger does not impliment Edible. This also allows lets say a Fruit class to impliment Edible while also inheriting from abstract Plant class
+    * Interface methods can only be either public or private. If public, implementations can't reduce visibility(no protected/package private)
+    * If object is defined as Object, must then cast the interface as the type to call virtual function
+    ```java
+    void main() {
+        Object[] objList = {
+            Animal obj1 = new Tiger();
+            Animal obj2 = new Chicken();
+            Plant obj3 = new Orange();
+            Plant obj4 = new Apple("red");
+            Plant obj5 = new PoisonIvy();
+        }
+        ((Chicken)obj2).fly(true);
+        ((Chicken)obj2).fly(false);
+
+        for (Object obj : objList) {
+            if (obj instanceof Edible) {
+                System.out.println(obj.getClass().getSimpleName(),(Edible)obj.howToEat())//must cast Edible interface to call virtual function
+            }
+        }
+    }
+    interface Edible {
+        String howToEat();
+    }
+    interface Flight {// <-- poor design, better to make an abstract bird class (or composition with flight class) since state must be public
+        default void fly(boolean newState) {
+            if (newState && isFlying()) {System.out.println("Already Flying");}
+            else if (newState && !isFlying()) {System.out.println("Lift Off");}
+            else if (!newState && isFlying()) {System.out.println("Landing");}
+            else if (!newState && !isFlying()) {System.out.println("Already Landed");}
+            _setFlying(newState);
+        }
+        boolean isFlying();
+        void _setFlying(boolean newState);
+    }
+    abstract class Animal {
+        abstract String noise();//must carry abstract to methods
+        abstract String howToMove();
+    }
+    class Chicken extends Animal implements Edible, Flight {
+        private boolean flying = false;
+        @Override String noise() {
+            return "bock bock";
+        }
+        @Override public String howToEat() {//must declare public since its from interface
+            return "cook";
+        }
+        @Override String howToMove() {
+            return "fly";
+        }
+        @Override public boolean isFlying() {//must declare public since its from interface
+            return this.flying;
+        }
+        @Override public void _setFlying(boolean newState) {//must declare public since its from interface
+            this.flying = newState;
+        }
+    }
+    class Tiger extends Animal {
+        @Override String noise() {
+            return "roar";
+        }
+        @Override String howToMove() {
+            return "run";
+        }
+    }
+
+    abstract class Plant {
+        private String color;
+
+        Plant(String color) {
+            this.color = color;
+        }
+        String getColor() {
+            return color;
+        }
+    }
+    class PoisonIvy extends Plant {
+        PoisonIvy(){
+            super("green");
+        }
+    }
+
+    abstract class Fruit extends Plant implements Edible {
+        Fruit(String color) {//constructors can't be abstract
+            super(color);
+        }
+    }
+    class Orange extends Fruit {
+        Orange() {
+            super("orange");
+        }
+        @Override public String howToEat() {//must declare public since its from interface
+            return "juice";
+        }
+    }
+    class Apple extends Fruit {
+        Apple(String color) {
+            super(color);
+        }
+        @Override public String howToEat() {//must declare public since its from interface
+            return "bite";
+        }
+    }
+    ```
+
+
+##### Type Casting
+* when defining a parent class but calling a child constructor, child attributes and methods are unavailable to object unless later manual casted to redefine as child class type
+    * Java remembers the the class the contructor was called from. Creates almost a "secret" type that is remembered if in case a child object is defined as a parent and later type casted as a child.
+
+* autocasted if redefining a child object as parent
+* manual casting needed if redefining a parent object as child asuming object is already a child but previously defined as parent
+* remember, parents can not become a child!
+
+```java
+void main() {
+    Square shape1Sqr = new Square();
+    Rectangle shape2Rect = new Square();
+    Square shape3 = new Rectangle();//  <-- RUNTIME error will crash; a parent object, can not be defined as child if not actually a child
+
+    Rectangle shape1Copy = shape1Sqr;//redefined child->parent auto-casted
+    Square shape2Copy = (Square)shape2Rect;//redefined parent->child NEEDS manual type-casting
+}
+
+class Parent{
+    int width = 3;
+    int hight = 4;
+}
+
+class Square extends Rectangle{
+    int side = 12;
+}
+
+```
+#### Object Comparison
+* use `==` to compare memory addresses of objects not data within
+* use `instanceof` to compare object to type name ie. `var1 instanceof Object` returns `bool`
+* **override** `equals()` method to extend functionality to custom classes extended from `Object`
+    * use `instanceof` to prevent crash if parameter is not same class type
+    ```java
+    void main() {
+        Circle shape1 = new Circle(1);
+        Circle shape2 = new Circle();
+        System.out.println(shape1.equals(shape2))//different instances but contain same data, returns `true`
+    }
+    class Circle {
+        double radius;
+        Circle() {
+            this.radius = 1;
+        }
+        Circle(double radius) {
+            this.radius = radius;
+        }
+        @override double equals(Object obj) {
+            if (obj instanceof Circle) {//prevents crash if obj can't be casted to Circle
+                Circle objCasted = (Circle)obj;//MUST cast since previously defined as Object in parameter type
+                return this.radius == obj.radius;//be aware of rounding errors
+            }
+            return false;//obj was not a Circle
+        }
+    }
+    ```
+* alternativly could override the `compareTo()` method from the `Comparable` interface.
+    * helpful for sorting classes that arnen't a built in warper class for primitives...could beef up a previous sort algorithm that support objects that also implement Comparable to now modularly sort the object regardless of the type
+    ```java
+    interface Comparable {//Simplified version of Java's provided interface
+        int compareTo(Object obj);// <-- conventionally intended to returns <0 if this object > parameter , 0 if equal, <0 if this object < parameter
+    }
+    ```
+    ```java
+    void main() {
+        Circle shape1 = new Circle(1);
+        Circle shape2 = new Circle();
+        System.out.println(shape1.equals(shape2))//different instances but contain same data, returns `true`
+    }
+    class Circle implements Comparable {
+        double radius;
+        Circle() {
+            this.radius = 1;
+        }
+        Circle(double radius) {
+            this.radius = radius;
+        }
+        @override int compareTo(Object obj) {//lacks type safety if obj not circle
+            Circle objCasted = (Circle)obj;//MUST cast since previously defined as Object in parameter type
+            if (this.radius > obj.radius) {
+                return 1;
+            } else if (this.radius < obj.radius) {
+                return -1;
+            } else return 0;
+        }
+    }
+    ```
+
+</details>
+
+***
+### exception handling
+* raise an exception(optional, best for better error messages and/or forcing an error)
+    * use `throws <Exception>` after method signature (conventionally declaring we are looking for it)
+    * use `throw new <Exception>("Error")` in code block (raises the error, crashes if not handled)
+* handling exception(jvm will catch automatically raise errors and/or manully thrown errors)
+    * use `try`&`catch` to handle error(`ex` is just a convensional variable)(required for checked exceptions)
+    * add more `catch` blocks for catching more errors (ie. `InputMismatchException` for inputing String instead of Int)
+* `finally` optional block AWAYS runs even when `return` statements exist in try/catch blocks
+
+#### custom exceptions
+```java
+class InvalidRadiusException extends RuntimeException {
+    private double radius;
+    InvalidRadiusException(double radius) {//overloads inherited constructor to allow doubles instead of Strings
+        this.radius = radius;
+    }
+    double getRadius() {//helpful since getMessage() would only get the string
+        return this.radius
+    }
+}
+```
+
+#### 1. Unchecked Exceptions (Subclasses of `RuntimeException`)
+**Rule:** You are **not required** to catch these or declare them in a `throws` clause. They usually represent programming logic errors.
+
+| Exception Class                      | Package     | Common Trigger |
+| :--- | :--- | :--- |
+| **`ArithmeticException`**            | `java.lang` | Division by zero or overflow. |
+| **`NullPointerException`**           | `java.lang` | Accessing a method or field on a `null` object. |
+| **`ArrayIndexOutOfBoundsException`** | `java.lang` | Using an index outside the range of an array. |
+| **`IllegalArgumentException`**       | `java.lang` | Passing an inappropriate value to a method. |
+| **`IllegalStateException`**          | `java.lang` | Calling a method when the object is in an unfit state. |
+| **`NumberFormatException`**          | `java.lang` | Failing to parse a string into a numeric type. |
+| **`ClassCastException`**             | `java.lang` | Attempting to cast an object to an incompatible type. |
+| **`NoSuchElementException`**         | `java.util` | Trying to get an element from an empty collection/iterator. |
+
+---
+
+#### 2. Checked Exceptions (Subclasses of `Exception` excluding `RuntimeException`)
+**Rule:** You **must** wrap these in a `try-catch` block or declare them in your method signature using `throws`. These represent recoverable conditions outside your code's direct control.
+
+| Exception Class                  | Package                | Common Trigger |
+| :--- | :--- | :--- |
+| **`IOException`**                | `java.io`              | Failed or interrupted I/O operations. |
+| **`FileNotFoundException`**      | `java.io`              | Attempting to access a file that does not exist on disk. |
+| **`SQLException`**               | `java.sql`             | Errors related to database access or syntax. |
+| **`ClassNotFoundException`**     | `java.lang`            | The JVM cannot find a class it needs to load. |
+| **`InterruptedException`**       | `java.lang`            | A thread is interrupted while it is waiting or sleeping. |
+| **`CloneNotSupportedException`** | `java.lang`            | Attempting to clone an object that doesn't implement `Cloneable`. |
+| **`TimeoutException`**           | `java.util.concurrent` | A blocking operation timed out. |
+
+---
+
+#### 3. Errors (Subclasses of `Error`)
+**Rule:** These are "Unchecked" but are **not** meant to be caught. They represent serious JVM-level disasters.
+
+| Error Class                | Why it happens |
+| :--- | :--- |
+| **`OutOfMemoryError`**     | The JVM has run out of heap space. |
+| **`StackOverflowError`**   | Too many recursive calls (infinite recursion). |
+| **`NoClassDefFoundError`** | A class was available at compile time but missing at runtime. |
+
+```java
+void main() {
+    int num1 = 4;
+    int num2 = 0;
+    try {
+    System.out.println(quotient(num1, num2));
+    } catch (ArithmeticException ex) {
+        System.out.printf("Exception caught: %s\n", ex.getMessage());
+    } catch (Exception ex) {
+        System.out.printf("Exception caught: %s\n", ex.getMessage());
+    } finally {//optional
+        //AWAYS runs even when `return` statements exist in try/catch blocks
+    }
+    //runs regardless of errors, but NOT when return statements exist in try/catch blocks
+}
+int quotient(int numerator, int divisor) throws ArithmeticException {
+    if (divisor != 0) {
+        return numerator / divisor;
+    } else {
+        throw new ArithmeticException("Divisor cannot be zero");//throws `new` object instance (ie. ArithmeticException)
+    }
+}
+```
+<details><summary></summary>
+
 </details>
 
 ***

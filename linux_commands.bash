@@ -1,6 +1,7 @@
 mkdir -p new_directory_name/sub_directory_name #creates new directory, -p allows nested directory
 
 
+echo $? #shows error from previous command
 
 pwd #returns active working directory
 
@@ -47,3 +48,10 @@ rm -r directory #removes all files in directory
 rmdir directory #removes directory
 
 #in Nano, M- means "alt"
+
+^U for coping and clearing screen
+^Y for pasting that same copy
+
+#use diff for comparing only the difference of two files. Outputs only the lines that are different
+diff file1 file2 output.txt #use -u flag to show lines added/removed with +/-
+#git also has a diff command
