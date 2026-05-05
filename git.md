@@ -27,3 +27,7 @@ setup new remote
 `git bisect bad`
 `git bisect good master`
 `git bisect run sh custom-script.sh` lets me automate bisect. Combine with `$?` in shell script to decode error messages 
+
+deleting a tag
+`git tag -d <tag_name>`
+`git push -d origin <tage_name>`

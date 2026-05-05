@@ -127,7 +127,8 @@ char ch = 65;    // 'A'
 int i = 65;
 char c = (char) i; //<- needs type casting since `i` "could" be outside of char range ie. 0-65535
 ```
-* important unicode characters
+important unicode characters
+
 | Decimal | Char  | Decimal | Char | Decimal | Char | Decimal | Char |
 |---------|-------|---------|------|---------|------|---------|------|
 |  32     | space |  56     | 8    | 80      | P    | 104     | h    |
@@ -1065,6 +1066,45 @@ public static BigDecimal getLargestNumber(ArrayList<Number> list) {
     return biggest;
 }
 ```
+```java
+<E extends Comparable<? super E>> void quicksortGeneric(E[] data) {
+    quicksortGeneric(data, 0, data.length - 1);
+}
+<E extends Comparable<? super E>> void quicksortGeneric(E[] data, int start, int end) {
+    if (start < end) {
+        int pivot = partition(data, start, end);//moves everything less to the left, greater to the right...then returns pivot index
+        quicksortGeneric(data, start, pivot - 1);//sorts left of pivot
+        quicksortGeneric(data, pivot + 1, end);//sorts right of pivot
+    }
+}
+<E extends Comparable<? super E>> int partition(E[] data, int start, int end) {
+    int middle = (start + end) / 2;
+    E pivotValue = data[middle];
+
+    //swap pivot(ie. middle) with start
+    E temp = data[middle];
+    data[middle] = data[start];
+    data[start] = temp;
+
+    int pivot = start;
+
+    for (int scan = start + 1; scan <= end; scan++) {
+        if (data[scan].compareTo(pivotValue) < 0) {//true if scan < pivotValue
+            pivot++;//update pivot
+            //swap new pivot with scan
+            temp = data[scan];
+            data[scan] = data[pivot];
+            data[pivot] = temp;
+        }
+    }
+    //swap start with new pivot
+    temp = data[pivot];
+    data[pivot] = data[start];
+    data[start] = temp;
+
+    return pivot;
+}
+```
 </details>
 
 ***
@@ -1441,9 +1481,9 @@ class Square extends Rectangle{
     ```
 * alternativly could override the `compareTo()` method from the `Comparable` interface.
     * helpful for sorting classes that arnen't a built in warper class for primitives...could beef up a previous sort algorithm that support objects that also implement Comparable to now modularly sort the object regardless of the type
-    ```java
+    ```java # ignore this one, just an example
     interface Comparable {//Simplified version of Java's provided interface
-        int compareTo(Object obj);// <-- conventionally intended to returns <0 if this object > parameter , 0 if equal, <0 if this object < parameter
+        int compareTo(Object obj);// Conventionally returns < 0 if this object > parameter , 0 if equal, < 0 if this object < parameter
     }
     ```
     ```java
@@ -1462,19 +1502,149 @@ class Square extends Rectangle{
         }
         @override int compareTo(Object obj) {//lacks type safety if obj not circle
             Circle objCasted = (Circle)obj;//MUST cast since previously defined as Object in parameter type
-            if (this.radius > obj.radius) {
+            if (this.radius > objCasted.radius) {
                 return 1;
-            } else if (this.radius < obj.radius) {
+            } else if (this.radius < objCasted.radius) {
                 return -1;
             } else return 0;
         }
     }
     ```
+##### Generic Comparables
+```java
+void main() {
+    Circle shape1 = new Circle(1);
+    Circle shape2 = new Circle();
+    
+    // Different instances but contain same data, now correctly returns `true`
+    System.out.println(shape1.equals(shape2));
+    
+    // This will print 0, meaning they are equal according to compareTo
+    System.out.println(shape1.compareTo(shape2));
+}
 
+// 1. Add <Circle> to the Comparable interface
+class Circle implements Comparable<Circle> {
+    double radius;
+    
+    Circle() {
+        this.radius = 1;
+    }
+    
+    Circle(double radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    // 2. The parameter is now explicitly a Circle, not an Object
+    public int compareTo(Circle other) {
+        // 3. No casting needed! We know 'other' is guaranteed to be a Circle.
+        
+        if (this.radius > other.radius) {
+            return 1;
+        } else if (this.radius < other.radius) {
+            return -1;
+        } else {
+            return 0;
+        }
+        
+        // Note: A cleaner, best-practice way to write the above 7 lines in modern Java is:
+        // return Double.compare(this.radius, other.radius);
+    }
+
+    // Added so shape1.equals(shape2) works based on the radius data, not memory address
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        
+        Circle circle = (Circle) obj;
+        // Compare primitive doubles safely
+        return Double.compare(circle.radius, this.radius) == 0; 
+    }
+}
+```
+
+  Key differences you'll notice in this updated version:
+   * implements Comparable<Circle>: This tells the compiler that a Circle can only be compared to another Circle.
+   * public int compareTo(Circle other): The method signature now accepts a Circle directly.
+   * No (Circle) obj casting: Because the compiler enforces the type, you don't need to manually cast Object to Circle inside the method. You can access other.radius immediately.
+* Exists also a generic `Comparable<E>` interface...way easier to avoid dealing with tyoe casting
+* **MORE ROBUST** approach is `<E extends Comparable<? super E>>` vs `<E extends Comparable<E>>` (see `quicksortGeneric`) since comparable<E> if inherited from parent class is locked to that same parent class...meaning can't compare child classes
+    Imagine you have a class Animal that implements Comparable<Animal>. 
+    Then, you create a subclass called Dog extends Animal. 
+    
+    Because Dog inherits compareTo(Animal) from its parent, it technically implements Comparable<Animal>, not Comparable<Dog>. 
+
+    If you use <E extends Comparable<E>>, you cannot pass a Dog[] array into your quicksort method because Dog doesn't implement Comparable<Dog>.
+
+    By using <E extends Comparable<? super E>>, you are telling Java: "Accept any type E, as long as E (or one of E's parent classes) implements Comparable."
+
+#### Generics
+```java
+void main() {
+    GenericStack<String> stack1 = new GenericStack<>();
+}
+class GenericStack<E> {
+    //use E as type
+    <E> void customMethod(E[] data) {// <-- use <E> for methods that accept a generic type...
+        //method statements
+    }
+}
+```
+#### Generic bounded types
+* Must bind generic type if intending to call any methods of the generic type. Data structures don't always need this since they are just storing the types. Don't need to bind generic to type if calling the methods of the generic outside of the generic class, only if calling from inside the class
+* the big use case for this is that if the generic was bypassed and just used GeometricObject as the type, then if i didn't want polymorphic behavior (ie. only either circles or rectangls) then I need to use generic bounded types to the parent. I could also  bind it to circle, but then I would need overloaded methods for rectangle as well. 
+```java
+import java.util.ArrayList;
+
+public class MainProgram {
+    public static void main(String[] args) {
+        ArrayList<Circle> circles = new ArrayList<>();
+
+        circles.add(new Circle(2, "Blue", false));//
+        circles.add(new Circle(4, "Green", false));
+
+        double area = totalArea(circles);
+        System.out.printf("The total of all circles is %.2f\n", area);
+    }
+
+    public static <T extends GeometricObject> double totalArea(ArrayList<T> objects) {//need to use <T> as placeholder for actual object to "extends ParentClass", enforces parent type 'GeometricObject' without having to overload for every possible child class.
+        double total = 0;
+        for (GeometricObject item : objects) {
+            total += item.getArea();
+        }
+        return total;
+    }
+}
+    private boolean filled;
+
+    protected GeometricObject(String color, boolean filled) {
+        this.color = color;
+        this.filled = filled;
+    }
+    public abstract double getArea();
+}
+class Circle extends GeometricObject {
+    private double radius;
+
+    Circle(double radius, String color, boolean filled) {
+        super(color, filled);
+        this.radius = radius;
+    }
+
+    @Override
+    double getArea() {
+        return Math.PI * radius * radius;
+    }
+}
+```
 </details>
 
 ***
 ### exception handling
+<details><summary></summary>
+
 * raise an exception(optional, best for better error messages and/or forcing an error)
     * use `throws <Exception>` after method signature (conventionally declaring we are looking for it)
     * use `throw new <Exception>("Error")` in code block (raises the error, crashes if not handled)
@@ -1559,8 +1729,582 @@ int quotient(int numerator, int divisor) throws ArithmeticException {
     }
 }
 ```
+</details>
+
+***
+### recursion
 <details><summary></summary>
 
+base cases - stops recursion
+recursive steps - continues recursion
+#### factorials
+```java
+void main() {
+    System.out.println(factorial(4));
+}
+void factorial(int n) {
+    if (n == 0) {//base case
+        System.out.println("n" + n)//only ever prints "n = 0"
+        return 1;//cuts adding to call stack
+    }
+    System.out.println("n" + n)
+    return n * factorial(n - 1);//recursive steps
+}
+//Output:
+// n = 4 prints first despite this iteration is bottom of call stack
+// n = 3
+// n = 2
+// n = 1 this itteration is top of call stack
+// n = 0  <-- base case reached...0 was never returned, 1 was, but 0 was printed anyway
+// 24 <-- executed in reverse (top to bottom of call stack) ie. 1*2*3*4 not->4*3*2*1
+```
+n does drop to 0 (this base case) always ie 4,3,2,1,0 however what is returned is the sequence of call stacks
+n = 0 returns f(0) = 1          <-- placed last to top of call stack
+n = 1 returns f(1) = n * f(0) 
+n = 2 returns f(2) = n * f(1) 
+n = 3 returns f(3) = n * f(2) 
+n = 4 returns f(4) = n * f(3)   <-- place first to bottom of call stack
+
+#### fibonacci
+```java
+public static long getFibonacciRecursive(int n) {
+    if (n <= 1) {
+        return n;
+    //could also do:
+    // if (n == 0) return 0;
+    // if (n == 1) return 1;
+    }
+    return getFibonacciRecursive(n - 1) + getFibonacciRecursive(n - 2);
+}
+public static long getFibonacciRecursive(int n) {
+    if (n >= 2) {
+        return getFibonacciRecursive(n - 1) + getFibonacciRecursive(n - 2);
+    }
+}
+// fib #'s --> 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144
+// f(0) = 0 <--base case
+// f(1) = 1 <--base case
+// f(n) = f(n - 1) + f(n - 2) when n>=2  <-- recursive steps
+```
+
+#### selection sort
+this is treated similar to a loop since it doesnt return anything, but the start of the "loop" starts at the top of the call stack.
+```java
+void main() {
+    int[] myArray = {6, 7, 3, 2, 9, 4, 45, 65, 23, 34, 11, 55, 33, 88, 90, 67, 45, 78, 55, 22};
+    selectionSort(myArray);
+    System.out.println(myArray);
+}
+void selectionSort(int[] data) {//entry point since main() shouldn't need to know additional parameters
+    selectionSort(data, 0, data.length - 1);//not recursion, simply calling an overloaded method
+}
+void selectionSort(int[] data, int low,  int high) {
+    if (low < high) {//invisible base case
+        int minPos = low;
+        for (int scan = low + 1; scan <= high; scan++) {
+            if (data[scan] < data[minPos]) {
+                minPos = scan;
+            }
+        }
+        int temp = data[low];
+        data[low] = data[minPos];
+        data[minPos] = temp;
+        return selectionSort(data, low + 1, high);
+    }
+}
+```
+#### binary search
+```java
+boolean binarySearch(int[] data, search) {
+    binarySearch(data, 0, data.length-1, search);
+}
+boolean binarySearch(int[] data, int low, int high, int search) {
+    if (low > high) return false;
+
+    int middle = (low + high) / 2;
+
+    if (search == data[middle]) {
+        return true;
+    } else if (search > data[middle]) {
+        return binarySearch(data, middle + 1, high, search);
+    } else {
+        return binarySearch(data, low, middle - 1, search);
+    }
+}
+```
+#### Tail Recursion
+behaves similar to standard standard loop
+call stack merely a vehicle to return the exact same result to to bottom, since result is alerady calculated at top of stack
+```java
+void main() {
+    System.out.println(factorialTail(4));
+}
+long factorialTail(int n) {
+    return factorialTail(n, 1);//initialized result=1
+}
+long factorialTail(int n, int result) {
+    if (n == 0) {//base condition
+        return result;//actual returned result
+    }
+    return factorialTail(n - 1, n * result);//increments result by * n...n is decremented by 1  <--tail recursive because ONLY itself was called ie. no n * f(x)
+}
+```
+n = 0; result = 24
+n = 1; result = 6 * 4 = 24 <-- if base condition was 1, would loop forever if n = 0...otherwise works when n is possitive
+n = 2; result = 2 * 3 = 6
+n = 3; result = 1 * 2 = 2
+n = 4; result = 1
+
+#### quicksort
+```java
+void quicksort(int[] data) {
+    quicksort(data, 0, data.length - 1);
+}
+void quicksort(int[] data, int start, int end) {
+    if (start < end) {
+        int pivot = partition(data, start, end);//moves everything less to the left, greater to the right...then returns pivot index
+        quicksort(data, start, pivot - 1);//sorts left of pivot
+        quicksort(data, pivot + 1, end);//sorts right of pivot
+    }
+}
+int partition(int[] data, int start, int end) {
+    int middle = (start + end) / 2;
+    int pivotValue = data[middle];
+
+    //swap pivot(ie. middle) with start
+    int temp = data[middle];
+    data[middle] = data[start];
+    data[start] = temp;
+
+    int pivot = start;
+
+    for (int scan = start + 1; scan <= end; scan++) {
+        if (data[scan] < pivotValue) {
+            pivot++;//update pivot
+            //swap new pivot with scan
+            temp = data[scan];
+            data[scan] = data[pivot];
+            data[pivot] = temp;
+        }
+    }
+    //swap start with new pivot
+    temp = data[pivot];
+    data[pivot] = data[start];
+    data[start] = temp;
+
+    return pivot;
+}
+```
+
+</details>
+
+***
+### data structers
+<details><summary></summary>
+
+#### linked lists
+```java
+public class LinkedList<E extends Comparable<? super E>> {
+    private ListNode<E> head = new ListNode<>();
+    private int size;
+
+    public LinkedList() { this.size = 0; }
+
+    public int getSize() { return this.size; }
+    public boolean isEmpty() { return this.size == 0; }
+
+    public void insert(E o) {
+        ListNode<E> node = new ListNode<>(o);
+        ListNode<E> current = head.next;
+        ListNode<E> previous = head;
+
+        //sorts list
+        while (current != null && current.value.compareTo(o) < 0) {
+            previous = current;
+            current = current.next;//iterates to the next node
+        }
+        //inserts new node between previous and current node
+        previous.next = node;
+        node.next = current;
+        this.size++
+    }
+    public void remove(E o) {
+        ListNode<E> node = head.next;
+        ListNode<E> previous = head;
+        // 1. Check if node is null FIRST to avoid NullPointerException
+        while (node != null && node.value.compareTo(o) != 0) {
+            previous = node;
+            node = node.next;
+        }
+        // 2. If node is null, we reached the end without finding 'o'
+        if (node != null) {
+            previous.next = node.next;
+            this.size--; // Don't forget to decrement the size!
+        } else {
+            System.out.println("Element not found.");
+        }
+    }
+    public void display() {
+        ListNode<E> current = head.next;
+
+        while (current != null) {
+            System.out.println(current.value);
+            current = current.next;
+        }
+    }
+    public boolean find(E o) {
+        ListNode<E> current = head.next;
+        boolean found = false;
+
+        while (current != null && !found) {
+            if (current.value.compareTo(o) == 0) {
+                found = true;
+            } else {
+                current = current.next;
+            }
+        }
+
+        return found;
+    }
+    private class ListNode<E> {
+        public E value;
+        public ListNode<E> next;
+
+        public ListNode() {}
+        public ListNode(E o) {
+            this.value = o;
+        }
+    }
+}
+```
+
+#### Static Stacks
+A LIFO data structure...under the hood a static stack is typically an array wrapped in a class for extra functionality (ie. overflow protection, variable to track last index of filled portion)
+
+
+```java
+public class StaticStack<E> {
+    public E[] data;
+    public int top = -1;
+
+    public StaticStack(int maxSize) {
+        this.data = (E[]) new Object[maxSize];
+    }
+
+    public void push(E v) throws Exception {
+        if (isFull()) {
+            throw new Exception("Stack is full")
+        }
+        top++;
+        data[top] = v;
+    }
+
+    public E pop() throws Exception {
+        if (isEmpty()) {
+            throw new Exception("Stack is empty")
+        }
+        return data[top--];
+    }
+
+    public boolean isFull() {
+        return this.top == this.data.length - 1;
+    }
+    public boolean isEmpty() {
+        return top == -1;
+    }
+}
+```
+#### Dynamic stacks
+A LIFO data structure. Structures similar to a linked list but points to previous node instead of newer
+```java
+public class DynamicStack<E> {
+    private class StackNode<E> {
+        public E value;
+        public StackNode<E> previous;
+
+        public StackNode(E v) {
+            this.value = v;
+        }
+    }
+
+    private StackNode<E> top;
+
+    public boolean isEmpty() {
+        return top == null;
+    }
+
+    public void push(E v) {
+        StackNode<E> node = new StackNode<E>(v);
+        node.previous = top;
+        top = node;
+    }
+    public E pop() throws Exception {
+        if (isEmpty()) {
+            throw new Exception("Stack is empty");
+        }
+        top = top.previous;
+        return top.value;
+    }
+}
+```
+
+#### Static Queues
+A queue is a First In, First Out (FIFO) data structure.  Items are added at the back of a queue and removed from the front of a queue. 
+```java
+public class StaticQueue<E> {
+    private E[] data;
+    private int front;
+    private int back;
+    private int count;
+
+    public StaticQueue(int size) {
+        this.data = (E[])(new Object[size]);
+        this.front = 0;
+        this.back = 0;
+        this.count = 0;
+    }
+
+    public boolean isEmpty() {
+        return count == 0;
+    }
+
+    public boolean isFull() {
+        return count == data.length;
+    }
+    //adds item to back of queue
+    public void enqueue(E v) throws Exception {
+        if (isFull()) {
+            throw new Exception("Queue is full");
+        }
+        //wraps back of queue back to start of queue(static queues are circlular)
+        if (back == (data.length - 1)) {
+            back = 0;
+        } else {
+            back++;
+        }
+
+        data[back] = v;
+        count++;
+    }
+    //returns front item value then removes same item from queue
+    public E dequeue() throws Exception {
+        if (isEmpty()) {
+            throw new Exception("Queue is empty");
+        }
+
+        E result = data[front];
+        if (front == (data.length - 1)) {
+            front = 0;
+        } else {
+            front++;
+        }
+
+        count--;
+
+        return result;
+    }
+}
+```
+
+#### Binary Search Trees
+```java
+public class BinarySearchTree {
+    private class TreeNode {
+        int value;
+        TreeNode left;
+        TreeNode right;
+
+        public TreeNode(int value) {
+            this.value = value;
+        }
+    }
+
+    private TreeNode root;
+
+    public void insert(int value) {
+        if (root == null) {
+            root == new TreeNode(value)
+        } else {
+            TreeNode parent = null;
+            TreeNode node = root;
+            while (node != null) {
+                parent = node;
+                if (node.value < value) {
+                } else {
+                    node = node.left;
+                }
+            }
+            TreeNode newNode = new TreeNode(value);
+            if (parent.value < value) {
+                parent.right = newNode;
+            } else {
+                parent.left = newNode;
+            }
+        }
+    }
+
+    public boolean search(int value) {
+        boolean found = false;
+        TreeNode node = root;
+
+        while (!found && node != null) {
+            if (node.value == value) {
+                found = true;
+            } else if (node.value < value) {
+                node = node.right;
+            } else {
+                node = node.left;
+            }
+        }
+
+        return found;
+    }
+}
+```
+#### breath first search
+* Would add the parent to a queueAnd then once it adds the children to a queue it can then remove the parent from the queueAnd then would add the grandchildren to the queue and then can remove the grandchildren Parents from the queue.
+```java
+public void printBFS(TreeNode root) {
+    if (root == null) return;
+    
+    Queue<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+
+    while (!queue.isEmpty()) {
+        TreeNode current = queue.poll();//removes head & points to next
+        
+        // PROCESS: Print when dequeued
+        System.out.print(current.data + " "); 
+
+        if (current.left != null) queue.add(current.left);
+        if (current.right != null) queue.add(current.right);
+    }
+}
+```
+#### depth first search
+* recursively checks both sides, However the stack would check all of one side first
+##### In-Order Traversal (Left → Root → Right)
+sticks to the left
+Process the parent between visiting the left and right children.
+Note: In a Binary Search Tree (BST), this visits nodes in sorted order.
+```java
+public void printInOrder(TreeNode node) {
+    if (node == null) return;
+
+    // 1. DIVE Left
+    printInOrder(node.left);
+
+    // 2. PRINT (Parent in the middle)
+    System.out.print(node.data + " ");
+
+    // 3. DIVE Right
+    printInOrder(node.right);
+}
+```
+##### Pre-Order Traversal (Root → Left → Right)
+Print the parent, then "dive" into the children.
+* usefull to rebuild tree
+```java
+public void printPreOrder(TreeNode node) {
+    if (node == null) return;
+
+    // 1. PRINT (Parent first)
+    System.out.print(node.data + " ");
+
+    // 2. DIVE
+    printPreOrder(node.left);
+    printPreOrder(node.right);
+}
+```
+##### Post-Order Traversal (Left → Right → Root)
+* Print all children before printing the parent.
+
+```java
+public void printPostOrder(TreeNode node) {
+    if (node == null) return;
+
+    // 1. DIVE Left and Right
+    printPostOrder(node.left);
+    printPostOrder(node.right);
+
+    // 2. PRINT (Parent last)
+    System.out.print(node.data + " ");
+}
+```
+##### Deleting a node
+To delete a node that has two children, solution is traverse to the farmost right node copy that where the deleted node was, if there was a child to the left of that rightmost node that will then also be reassigned to the previous parent. Note that when left node is is reassigned as the child of the previous parent it will most likely be added now as a right child. To replace the rightmost mode to the deleted node is actually just simply copying its value rather than the notice itself recycling the previously allocated memory.
+```java
+public void remove(int value) {
+    TreeNode parent = null;
+    TreeNode node = root;
+    boolean done = false;
+
+    // 1. Search for the node and its parent
+    while (!done) {
+        if (node == null) {
+            return; // Value not found, exit method
+        }
+
+        if (node.value < value) {
+            parent = node;
+            node = node.right;
+        } else if (node.value > value) {
+            parent = node;
+            node = node.left;
+        } else {
+            done = true; // Found the node to delete!
+        }
+    }
+
+    // 2. Perform the deletion
+    // Case A: The node has no left child (or is a leaf)
+    if (node.left == null) {
+        if (parent == null) {
+            root = node.right;
+        } else {
+            if (parent.value < value) {
+                parent.right = node.right;
+            } else {
+                parent.left = node.right;
+            }
+        }
+    } 
+    // Case B: The node has a left child
+    else {
+        TreeNode parentOfRight = node;
+        TreeNode rightMost = node.left;
+
+        // Find the in-order predecessor (largest in the left subtree)
+        while (rightMost.right != null) {
+            parentOfRight = rightMost;
+            rightMost = rightMost.right;
+        }
+
+        // Replace the target node's value with the predecessor's value
+        node.value = rightMost.value;
+
+        // Clean up the moved predecessor node
+        if (parentOfRight.right == rightMost) {
+            parentOfRight.right = rightMost.left;
+        } else {
+            parentOfRight.left = rightMost.left;
+        }
+    }
+}
+```
+</details>
+
+***
+### IO
+<details><summary></summary>
+
+#### file Scanner & PrintWriter 
+* May create a `File` object from file path as constructor argument (does not open file but has methods to test if exists or empty)
+* may open a file object with Scanner(File obj)
+    *  when using  scanner methods such as nextLine(),  the cursor is moved to the beginning of the line
+* The `PrintWriter` object takes either a file object or file path as constructor arg
+    * PrintWriter will write over most recently scanned line since cursor is at beginning of line
+* May use a try block to open files (Scanner and PrintWriter both open) and optionally catch errors (ie. FileNotFoundException or IOException) which then automatically closes file
 </details>
 
 ***
@@ -1569,3 +2313,4 @@ int quotient(int numerator, int divisor) throws ArithmeticException {
 
 body
 </details>
+

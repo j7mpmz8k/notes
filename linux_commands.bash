@@ -1,7 +1,7 @@
 mkdir -p new_directory_name/sub_directory_name #creates new directory, -p allows nested directory
 
 
-echo $? #shows error from previous command
+echo $? #shows error from previous command...helpful to display in shell user in .bashrc
 
 pwd #returns active working directory
 
@@ -52,6 +52,11 @@ rmdir directory #removes directory
 ^U for coping and clearing screen
 ^Y for pasting that same copy
 
-#use diff for comparing only the difference of two files. Outputs only the lines that are different
-diff file1 file2 output.txt #use -u flag to show lines added/removed with +/-
-#git also has a diff command
+#use [abc][123].txt to find txt files that start with a,b,or c...with second character starting with 1,2, or 3
+
+file = test.txt
+echo ${file%.*}.md #replaces .txt with .md
+echo ${file%.*} #strips file extension
+
+
+#use " " when wanting to preserve multiple spaces in variable
