@@ -1,6 +1,7 @@
-***
+<details><summary>
+
 ### Strings
-<details><summary></summary>
+</summary>
 
 * can create templates similar to f-strings in python
     * use the backtick with `$` before the `{}`
@@ -19,10 +20,10 @@ console.log("Hello, World!");
 <script src="test.js"></script>
 ```
 </details>
+<details><summary>
 
-***
 ### variables
-<details><summary></summary>
+</summary>
 
 * should not use `name` or `Name` since legacy code already uses it in the JS library
 * variables are global between `.js` files since they are imported to the HTML file
@@ -45,10 +46,10 @@ console.log("Hello, World!");
     ```
 
 </details>
+<details><summary>
 
-***
 ### data types
-<details><summary></summary>
+</summary>
 
 #### primitives
 * `number` includes both decimals and whole numbers (may call methods due to auto boxing)
@@ -64,20 +65,20 @@ console.log("Hello, World!");
         * `""` → false
         * `"hello"` → true
 </details>
+<details><summary>
 
-***
 ### arithmatic
-<details><summary></summary>
+</summary>
 
 * use `/` for division
     * `//` is for comments
 * use `Math.trunc()` for integer division
 
 </details>
+<details><summary>
 
-***
 ### arrays
-<details><summary></summary>
+</summary>
 
 * use `[]` for assingment ie. `let animals = ["ape", "bear", "cat", "dog"];`
 
@@ -101,10 +102,10 @@ console.log("Hello, World!");
     * arg 1 → start idx to return
     * arg 2 → stop idx, not inclusive (default → remaining idx's)
 </details>
+<details><summary>
 
-***
 ### objects
-<details><summary></summary>
+</summary>
 
 * similar to python dictionaries
 * good practice to make object a `const` since it only effects the variable name
@@ -126,10 +127,10 @@ delete person.age;
 let arrayLength = person.length;
 ```
 </details>
+<details><summary>
 
-***
 ### comparison & logic
-<details><summary></summary>
+</summary>
 
 * supports short circuiting
 
@@ -149,10 +150,10 @@ let arrayLength = person.length;
     * side note, comparison operators still return boolean
 
 </details>
+<details><summary>
 
-***
 ### loops
-<details><summary></summary>
+</summary>
 
 * regular **for** loops behave and look exactly like a for loop in Java...only differance is the data type of `i` needs to be defined with `let`
 
@@ -205,10 +206,10 @@ let arrayLength = person.length;
 
 * **while** and **do while** loops look and function the same as in Java
 </details>
+<details><summary>
 
-***
 ### functions
-<details><summary></summary>
+</summary>
 
 * parameters do not need to be pre defined with let or const
 ```js
@@ -310,10 +311,10 @@ function displayPerson(...args) {
     
  
 </details>
+<details><summary>
 
-***
 ### functional
-<details><summary></summary>
+</summary>
 
 ```js
 let nums = [1, 2, 3, 5, 6, 8, 9, 10, 13, 16, 19, 20, 21, 22];
@@ -353,18 +354,18 @@ console.log(findFirst(nums, val => val > 10));//finds first num greater than 10
     console.log(firstGreaterThanTenFn(nums));
     ```
 </details>
+<details><summary>
 
-***
 ### debugging
-<details><summary></summary>
+</summary>
 
 * may add a breakpoint with adding the line `debugger;`
     * may then hover my mouse over a variable to show the value...that or just see the values in "scope" on the side
 </details>
+<details><summary>
 
-***
 ### header
-<details><summary></summary>
+</summary>
 
 body
 ```

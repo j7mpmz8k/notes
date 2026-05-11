@@ -20,28 +20,28 @@ public class Main {
 }
 ```
 </details>
+<details><summary>
 
-***
 ### signature
-<details><summary></summary>
+</summary>
 
 * `static` means the method it tied directly to the class without an instance/object
 * `String[] args` is for entering arguments when running the program even if no arguments are used.
 * `void` means nothing is returned, else the type of the return value must instead be declared ie. `int`, `boolean`, ect.
 </details>
+<details><summary>
 
-***
 ### printing to console
-<details><summary></summary>
+</summary>
 
 * evaluated left to right, `+` initially means addition, but when adding to a string, `3` is converted to `"3"` to concat to `"abc"` to create `"3abc"`
     * `System.out.print(System.out.println(1 + 2 + "abc" + 1 + 2););` -> output: "3abc12"
     * if intending to concat `1` & `2` instead of adding, use `"" + 1 + 2` instead 
 </details>
+<details><summary>
 
-***
 ### format fields
-<details><summary></summary>
+</summary>
 
 * builds template instead of concatenation
 * use `String.format()` for formatting a variable into a `String`
@@ -99,10 +99,10 @@ public class Main {
 | Platform-independent newline         | `%n`                   | (no arguments)           | (platform newline)         |
 | Multiple mixed types                 | `%s %d %.1f%%`         | `"Team"`, `88`, `73.333` | Team 88 73.3%              |
 </details>
+<details><summary>
 
-***
 ### data types
-<details><summary></summary>
+</summary>
 
 | Type       | Bit Size | Signed? | Range                       | Notes                                         |
 |------------|----------|---------|-----------------------------|-----------------------------------------------|
@@ -166,10 +166,10 @@ important unicode characters
         * returns `1` if **obj2** is less than **obj1**
 
 </details>
+<details><summary>
 
-***
 ### type casting
-<details><summary></summary>
+</summary>
 
 * **automatic** when widening from smaller type to larger 
   * integer path(signed number, ie. positive or negative)
@@ -220,10 +220,10 @@ important unicode characters
 * `int`/`double`/`float` -> `String` (**use a String formatter**)
     * **Alternativly** use `String.valueOf(int var1)` asuming `var1` is an **int**
 </details>
+<details><summary>
 
-***
 ### variables
-<details><summary></summary>
+</summary>
 
 * Must declare type enforcement of variables **ONLY** when *intializing* variable and/or methods
     * **exception** -> may *declare* variable in a seperate statement from *assignme
@@ -270,10 +270,10 @@ important unicode characters
     }
     ```
 </details>
+<details><summary>
 
-***
 ### User input to console
-<details><summary></summary>
+</summary>
 
 *Scanners* allow the program to read the console (ie. obtain user input)
 * the `Scanner` class must first be set as the data type
@@ -296,10 +296,10 @@ void main() {
 * use `nextLine()` for scanning `String` by entire line entered
 * may input any **String** instead of `System.in` to scan a string variable instead of from input
 </details>
+<details><summary>
 
-***
 ### Random numbers
-<details><summary></summary>
+</summary>
 
 * very similar to a `Scanner` as `Random` is also located in `java.util`
     * `.Random()` -> max range for data type, unless arguments are used ie. `rng.nextInt(11)` -> range is [0,10)
@@ -330,10 +330,10 @@ void main() {
     * `min + (int) (Math.random() * (max - min + 1))` -> returns an **int** in range **[min, max]**
     * `min + Math.random() * (max - min + 1e-10)`     -> returns a **double** in range **[min, max]**
 </details>
+<details><summary>
 
-***
 ### conditional statements
-<details><summary></summary>
+</summary>
 
 * `if` statements contains `()`
 * `else if` must be used instead since `elif` does not exist
@@ -463,10 +463,10 @@ void main() {
 ```
 
 </details>
+<details><summary>
 
-***
 ### loops
-<details><summary></summary>
+</summary>
 
 * `while` loops very similar to if statements
 ```java
@@ -528,10 +528,10 @@ void main() {
       }
       ```
 </details>
+<details><summary>
 
-***
 ### operators
-<details><summary></summary>
+</summary>
 
 * **bitwise** operators
     * full evaluation (ie. no short circuit)
@@ -616,10 +616,10 @@ Notes:
     ```
 
 </details>
+<details><summary>
 
-***
 ### methods
-<details><summary></summary>
+</summary>
 
 * **NOTE!* -> `public` or `private` is not requried except for `main()` which requires `public`
 
@@ -667,10 +667,10 @@ public static double max(double param1, double param2, double param3) {
 }
 ```
 </details>
+<details><summary>
 
-***
 ### Arrays
-<details><summary></summary>
+</summary>
 
 * Fixed size length
 * No hetrogenous types
@@ -786,10 +786,10 @@ int[][] raggedArray = {
     ```
 
 </details>
+<details><summary>
 
-***
 ### search/sort
-<details><summary></summary>
+</summary>
 
 * **linear search**
     ```java
@@ -859,10 +859,10 @@ int[][] raggedArray = {
     }
     ```
 </details>
+<details><summary>
 
-***
 ### arithmetic
-<details><summary></summary>
+</summary>
 
 * **post-increment** `i++` returns current value then increments
     ```java
@@ -957,10 +957,10 @@ int[][] raggedArray = {
 | 15      | 1111   |
 
 </details>
+<details><summary>
 
-***
 ### Strings
-<details><summary></summary>
+</summary>
 
 * immutable, must assign new value or define new variable
 * `+=` works for appending
@@ -980,9 +980,10 @@ int[][] raggedArray = {
 </details>
 
 
-***
+<details><summary>
+
 ### misc custom functions
-<details><summary></summary>
+</summary>
 
 ```java
 public static boolean areAnagramsSort(String s1, String s2) {
@@ -1106,10 +1107,10 @@ public static BigDecimal getLargestNumber(ArrayList<Number> list) {
 }
 ```
 </details>
+<details><summary>
 
-***
 ### Classes & Objects
-<details><summary></summary>
+</summary>
 
 * To build a constructor, make a method out of the class
 * `static` if used on method or attribute will keep use/functionality agnostic of instances
@@ -1640,10 +1641,10 @@ class Circle extends GeometricObject {
 }
 ```
 </details>
+<details><summary>
 
-***
 ### exception handling
-<details><summary></summary>
+</summary>
 
 * raise an exception(optional, best for better error messages and/or forcing an error)
     * use `throws <Exception>` after method signature (conventionally declaring we are looking for it)
@@ -1730,10 +1731,10 @@ int quotient(int numerator, int divisor) throws ArithmeticException {
 }
 ```
 </details>
+<details><summary>
 
-***
 ### recursion
-<details><summary></summary>
+</summary>
 
 base cases - stops recursion
 recursive steps - continues recursion
@@ -1897,10 +1898,10 @@ int partition(int[] data, int start, int end) {
 ```
 
 </details>
+<details><summary>
 
-***
 ### data structers
-<details><summary></summary>
+</summary>
 
 #### linked lists
 ```java
@@ -2293,10 +2294,10 @@ public void remove(int value) {
 }
 ```
 </details>
+<details><summary>
 
-***
 ### IO
-<details><summary></summary>
+</summary>
 
 #### file Scanner & PrintWriter 
 * May create a `File` object from file path as constructor argument (does not open file but has methods to test if exists or empty)
@@ -2306,10 +2307,10 @@ public void remove(int value) {
     * PrintWriter will write over most recently scanned line since cursor is at beginning of line
 * May use a try block to open files (Scanner and PrintWriter both open) and optionally catch errors (ie. FileNotFoundException or IOException) which then automatically closes file
 </details>
+<details><summary>
 
-***
 ### header
-<details><summary></summary>
+</summary>
 
 body
 </details>

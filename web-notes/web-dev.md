@@ -1,6 +1,7 @@
-***
+<details><summary>
+
 ### HTML structure
-<details><summary></summary>
+</summary>
 
 * check out https://w3schools.com/tags/ for comprehesive list of tags
     ```html
@@ -53,10 +54,10 @@
         * `"email"` ← looks identical to text, but helps password manangers
 
 </details>
+<details><summary>
 
-***
 ### scripts
-<details><summary></summary>
+</summary>
 
 * use `<script src="test.js"></script>` to load JS
     * may use in either the head or body
@@ -106,10 +107,10 @@
     ```
 
 </details>
+<details><summary>
 
-***
 ### header
-<details><summary></summary>
+</summary>
 
 body
 </details>
