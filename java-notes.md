@@ -1452,6 +1452,7 @@ class Square extends Rectangle{
 }
 
 ```
+
 #### Object Comparison
 * use `==` to compare memory addresses of objects not data within
 * use `instanceof` to compare object to type name ie. `var1 instanceof Object` returns `bool`

@@ -1,0 +1,8 @@
+#bar-at-top {
+    padding: 16px;
+    background-color: blueviolet;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+}

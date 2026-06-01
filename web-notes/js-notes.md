@@ -83,7 +83,7 @@ console.log("Hello, World!");
 * use `[]` for assingment ie. `let animals = ["ape", "bear", "cat", "dog"];`
 
 * use `.pop()` to return and remove last value
-* use `.push()` to add new value to last in array (returns pushed value)
+* use `.push()` to add new value to last in array (returns new length of array)
 
 * use `.shift()` to remove front value
 * use `.unshift()` to add new value to the front
@@ -126,6 +126,57 @@ delete person.age;
 
 let arrayLength = person.length;
 ```
+#### classes
+* `class` is syntactic sugar for `function`
+    ```js
+    function lamePerson(name) {//constuctor
+        const person = {};
+        person.myName = name;//property variable
+        person.sayName = () => console.log(person.myName);//method
+        return person//assumes `new` isn't used
+    }
+    function Person(name) {//constuctor
+        this.myName = name;//property variable
+        this.sayName = function() {console.log(this.myName);}//❌ not bound method
+        this.sayName = () => console.log(this.myName);//✅ bound method
+        // may add to prototype to save memory 
+        // ie. this.prototype.sayName = () => console.log(this.myName);...however not bound to obj
+    }
+    class CoolPerson {
+        constructor(name) {
+            this.myName = name;
+        }
+        sayName() {
+            console.log(this.myName);//❌ not bound
+        }
+        autoBoundSayName = () => console.log(this.myName);//✅
+    }
+    const person0 = Person("Greg");
+    const person1 = new Person("Alice");
+    const person2 = new CoolPerson("Bob");
+    ```
+    * the "class" or function may simulate an oop class by adding `new` before calling the function...while this may look similar to Java, actually a way to automattically create and return an object (similar to a dictionary)
+* may simulate a method by making one of the properties a callback function
+* may still use `this` to reference the object that is created and returned
+    * only works if using `new` since `this` is the varriable name of the obj
+* may create new properties to the class after definition using `prototype` between the class name and property → `className.prototype.newProperty = newValue/Function`
+    * not needed if adding to a created object → `obj.newProperty = newValue/Function`
+        * not recommended to add to only a single object since polymorphism is not enforced...better to add to the prototype
+##### this
+* this technically refers to the object that call the value/function of the proprety...however this breaks with `setTimeout` (ie. `setTimeout(person1.sayName, 1000`) since if it is used to delay a the method callback, the callback is added to the browser window object instead of its original obj the callback was stored in...meaning `this` no longer refers to the original obj breaking the simulated "oop"
+    * this requires binding the method callback to the original obj
+        1. can be done with `.bind(callBack)` 
+            ```js
+            setTimeout(person1.sayName.bind.(person1), 1000);
+            ```
+        2. may instead create a callBack to call the obj method
+            ```js
+            setTimeout(() => person1.sayName(), 1000);
+            ```
+        3. use big arrow functions to store the method call for the class, not `function` neither the prototype! See [classes](#classes) ...note, also works in higher order double big arrow funtions
+            ```js
+            setTimeout(person1.sayName(), 1000);//only works if `sayName` is just a variable to a big arrow callback
+            ```
 </details>
 <details><summary>
 
@@ -199,7 +250,7 @@ let arrayLength = person.length;
     ```js
     const myArray = [5, 4, 3, 2, 1, 0];
 
-    for (let i of myArray) {
+    for (const i of myArray) {
         console.log(i);
     }
     ```
@@ -327,8 +378,8 @@ function findFirst(nums, predicate) {//the predicate is the conditional statemen
     }
     return null;
 }
-//purpose to this is that it seperates the logic of scanning the array and the actuall predicate logic
-console.log(findFirst(nums, val => val % 2 === 0));//finds first even num
+//purpose to this is that it seperates the logic of scanning the arry and the actuall predicate logic
+console.log(findFirst(nums, val =9> val % 2 === 0));//finds first even num
 console.log(findFirst(nums, val => val > 10));//finds first num greater than 10
 ```
 * this can be even further refined to scale when needing many parameters...in this case there is only 2 `findFirst(nums, predicate)`
@@ -368,5 +419,4 @@ console.log(findFirst(nums, val => val > 10));//finds first num greater than 10
 </summary>
 
 body
-```
 </details>
