@@ -38,6 +38,83 @@
 * elements are traditionally categorized as either "block-level" or "inline"
     * Block-level (div, p, aside): These elements always start on a new line and take up the full width available (stretching out to the left and right as far as they can).
     * Inline (span, small): These elements do not start on a new line and only take up as much width as necessary for their content. They usually live inside block-level elements (like a `<span>` inside a `<p>`)
+#### links
+* use `<a href="url">` to create a clickable link...`href` is the destination
+    * links to other pages in the same project use a relative path (just the filename)
+    * links to external sites use the full URL
+    ```html
+    <!-- same project -->
+    <a href="profile.html">Profile</a>
+    <a href="dashboard.html">Dashboard</a>
+
+    <!-- external site -->
+    <a href="https://example.com">Visit Example</a>
+    ```
+* add `target="_blank"` to open the link in a new tab
+    ```html
+    <a href="https://example.com" target="_blank">Opens in new tab</a>
+    ```
+* `<a>` is an **inline** element, so it can sit inside a `<p>`, `<div>`, or on its own
+##### browser navigation
+* use `window.history.back()` instead of maually linking back to the home page to allow pressing the browser's forward button
+    * this because linking back to the home page would not create a "back" event in the browser
+    ```html
+    <div>
+        <button id="back-button">Back to Home</button>
+    </div>
+    ```
+    ```js
+    document.getElementById("back-button").addEventListener("click", () => {
+        window.history.back();
+    })
+    ```
+    * there is also a `forward()` method
+    * also a `go()` method that takes an integer to click back of forward some number of pages
+
+* may append informantion to the url (ie. `?name="Alice"` to store data when going to the next webpage
+    ```html
+    <div>
+        <a id="profile" href="profile.html?name=Alice">Profile</a>
+        <a href="dashboard.html">Dashboard</a>
+    </div>
+    ```
+    * this is then also stored under `search` in the `window.location` object...may be printed to console
+        ```js
+        const seachString = window.location.search;//output: ?name=Alice
+        console.log(searchString.split("=")[1]);//ouput: Alice
+        ```
+    * may get the default url of an element using `e.target.href`
+    * may set a new url to the `href` property on also on the `window.location` object
+        ```html
+        <div>
+            <a id="profile" href="profile.html">Profile</a><!-- ${e.target.href} gets → "href="profile.html" -->
+            <a href="dashboard.html">Dashboard</a>
+        </div>
+        ```
+        ```js
+        inputName.getElementById("textInput").addEventListener("change", e => {
+            e.prevendDefault();//needed or else only profile.html would be applied
+            window.location.href = `${e.target.href}?name=${newValue}`; 
+        });
+        ```
+    * if I stard appending values wich `&` or any other seperator, I could ged every string value seperately
+        ```js
+        const queryString = window.location.search;
+        const queryArray = queryString.split("&");
+        const firstName = queryArray[0].split("=")[1];
+        const lastName = queryArray[1].split("=")[1];
+
+        document.getElementById("user-name").innerHTML = `${firstName} ${lastName}`;
+        ```
+        * since the above is clunky...a better aproach is just get the `search` property and add it to the `URLSearchParams()` object constructor...then may just `get()` the value from the `"value-name"`
+            ```js
+            const queryString = window.location.search;
+            const params = new URLSearchParams(queryString);
+            console.log(params.get("first-name"));
+            console.log(params.get("last-name"));
+
+            document.getElementById("user-name").innerHTML = `${firstName} ${lastName}`;
+            ```
 #### lists
 ```html
 <ol><!-- orderd displays as numbered-->
@@ -148,6 +225,7 @@
         * `"password"`
         * `"radio"` ← can't be unchecked, looks like a multiple choice question bubble
         * `"email"` ← looks identical to text, but helps password manangers
+        * `"color"` → creates a color picker
 
 * to add surrounding text to also be interactabe, must wrap the text in a `<label for="id">`...`"id"` being the `id` of the input
     ```html
@@ -258,6 +336,10 @@
     ```
 * may also use `getElementsByClassName("exampleClass")`
     * returns an array of all the objects of that class
+* may use `querySelectorAll("css-selector")` to select elements using any CSS selector syntax (ie. `".myClass"`, `"#myId"`, `"div > p"`)
+    * ⚠️ returns a **static (dead) NodeList** — a snapshot of the DOM at call time that does **not** automatically update if elements are added/removed later
+    * contrast with `getElementsByClassName()` and `getElementsByTagName()` which return a **live HTMLCollection** that updates automatically
+    * static lists are generally safer for iteration; live collections can cause bugs if the DOM is mutated mid-loop
 #### nodes vs elements
 * elements are tags incuding inputs
     * use `.parentElement` to get parent elements
@@ -655,6 +737,16 @@ saveButton.addEventListener("click", () => {
         /*style changes here*/
     }
     ```
+    * may add the new class with `classList.add()`  and may remove a class with `classList.remove()`
+        ```js
+        document.getElementById("dark-mode").addEventListener("change", (e) => {
+        if (e.target.checked) {
+            document.body.classList.add("dark-mode");
+        } else {
+            document.body.classList.remove("dark-mode");
+        }
+        })
+        ```
 * ID's → reference the ID with a `#` before it
     ```html
     <div id="first"></div>
@@ -678,26 +770,51 @@ saveButton.addEventListener("click", () => {
     * **thickness**: ie. `5px`, `thin`, `medium`, `thick`
     * **color**: same values as background-color
 * `border-radius` → dictates pixel size to round corners
+    * handy to use `overflow: hidden` if a child emement spill outside because child may not have a curved border-radius
 * `margin` → (outside border) same values as font-size ie. `32px` or `12`
 * `padding` → (inside border) same values as margin
-* `display` → may convert element to a block ie. `display: block`
-* `font-family` → may select a new font in order of priority (maybe the browser doesn't support a specific font)
+* `display` → may convert element to a block ie. `display: block`/
+* `transition` → tells which property to apply transition affect to when it changer color, for how long, and **cubic-bezier** fn ie. `ease` or `cubic-bezier(0, .68, .11, .93)`
+    * `cubic-bezier()` → may visualize fn using 🌐 https://cubic-bezier.com
+    * `ease` → Fast start, slows down near end. Default animation feel
+    * `linear` → Constant speed throughout (no easing)
+    * `ease-in` → Starts slow, accelerates to end
+    * `ease-out` → Starts fast, slows down gradually
+    * `ease-in-out` → Slow-fast-slow curve. Symmetrical for smooth open/close interactions
+    ```css
+    .btn {
+        background-color: black;
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, .12), 0px 1px 2px rgba(0, 0, 0, .24);
+        transition: background-color .4s ease, box-shadow .1 ease-in;
+    }
+    .btn:hover {
+        background-color: red;
+    }
+    .btn:active {
+        box-shadow: none
+    }
+    ```
+* `box-shadow` → to stand out, my add two, one shorter/darker and one longer/lighter
+    ```css
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, .12), 0px 1px 2px rgba(0, 0, 0, .24);
+    ```
+* `font-family` → may select a new font in order of priority (maybe the browser doesn't support a specific font) 🌐 **Reference**: [remote fonts](https://fonts.google.com)
     ```css
     div {
         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     }
     ```
-    * 🌐 **Reference**: [remote fonts](https://fonts.google.com)
-    * may define new font familie using the `@font-face` selector
-    ```css
-    @font-face {
-        font-family: MyCustomFontName;         
-        src: url("path/to/font.ttf");/*usually a .ttf file*/
-    }
-    body {
-        font-family: MyCustomFontName, sans-serif;
-    }
-    ```
+
+    * may define new font families using the `@font-face` selector
+        ```css
+        @font-face {
+            font-family: MyCustomFontName;         
+            src: url("path/to/font.ttf");/*usually a .ttf file*/
+        }
+        body {
+            font-family: MyCustomFontName, sans-serif;
+        }
+        ```
 * `background-image` → may incude image or gradient
     * use `linear-gradient()` the angle and pallete of colors ie. `
         * optional param1(default is top to bottom): the angle ie. `90deg` → left to right...or `to left` → also left to right8
@@ -719,7 +836,193 @@ saveButton.addEventListener("click", () => {
         -webkit-background-clip: text;
     }
     ```
-###### positioning
+##### `border-box`
+* tricky to keep same size if one div has padding
+    ```css
+    #first {
+        width: 300px;
+        height: 100px;
+        border: 1px solid blue;
+    }
+    #second {/*now longer because of padding*/
+        width: 300px;
+        height: 100px;
+        padding: 20px;
+        border: 1px solid red;
+    }
+    ```
+* solution is to add `box-sizing: border-box` to all elements (default in content box)...padding is applied only within the width instead of in addition
+    ```css
+    * {
+        box-sizing: border-box;
+    }
+        #first {
+        width: 300px;
+        height: 100px;
+        border: 1px solid blue;
+    }
+    #second {/*same size regardless of padding*/
+        width: 300px;
+        height: 100px;
+        padding: 20px;
+        border: 1px solid red;
+    }
+    ```
+#### custom **dataset** poperty
+* needed when an event on one element changes other element...use the custom `dataset.customProperty = newValue;` on whatever element data should be stored in
+* better than calling a JS function directly from the HTML
+* don't actually need to pre-define in html
+##### **data-theme**
+* may use `dataset.theme` to overwrite a theme...particularly useful for **darkmode**
+    * needed in cases of safely switching between "classes" as `element.className = "dark"`... i could just simply add a class `classList.add('dark')` however than I would also have to remove a class ie. `classList.remove('light')`
+    ```js
+    document.body.dataset.theme = e.target.value;//notice it is `dataset.theme`...not data-theme
+    ```
+    * may be access in css using `elementName[data-theme="themeName"] {...}`
+        ```css
+        body[data-theme="light"] {
+            background: lightgrey;
+            color: black;
+        }
+        body[data-theme="dark"] {
+            background: rgb(20, 20, 20);
+            color: white;
+        }
+        body[data-theme="blue"] {
+            background: blue;
+            color: white;
+        }
+        ```
+    * may set html default using `data-theme="newTheme"`
+        ```html
+        <body data-theme="light">
+            <div>
+                <input class="theme-radio" type="radio" name="theme-radio" value="light" checked />Light
+                <input class="theme-radio" type="radio" name="theme-radio" value="dark">Dark Mode
+                <input class="theme-radio" type="radio" name="theme-radio" value="blue" />Blue Mode
+            </div>
+        </body>
+        ```
+
+##### **pressed** often used as flag to create click animation
+* similar to `data-theme` and `dataset.theme`...but instead `data-pressed` and `dataset.pressed`
+    ```css
+    .btn {
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, .12), 0px 1px 2px rgba(0, 0, 0, .24);
+    }
+
+    .btn:hover {
+        background-color: var(--light-primary);
+    }
+
+    .btn[data-pressed="true"] {
+        box-shadow: none;
+    }
+    ```
+
+    ```js
+    document.getElementById("button").addEventListener("mousedown", e => {
+        e.target.dataset.pressed = "true";
+    });
+
+    document.getElementById("button").addEventListener("mouseup", e => {
+        e.target.dataset.pressed = "false";
+    });
+    document.getElementById("button").addEventListener("mouseleave", e => {//needed "mouseleave" in case mouse moves before unclicking
+        e.target.dataset.pressed = "false";
+    });
+    ```
+* **alternativly** similar to `:hover` may use `:active` instead of `[data-pressed="true"]` 
+    ```css
+    btn:active {
+        box-shadow: none;
+    }
+    ```
+##### **transition** animation
+```html
+<div id="mask">
+</div>
+<div id="hamburger-menu" data-isOpen="false"><!-- Custom attribute to track state -->
+</div>
+<div id="sidebar" class="sidebar" data-toggled="open">
+</div>
+```
+
+```js
+const sidebar = document.getElementById('sidebar');
+const mask = document.getElementById('mask');
+const navBtn = document.getElementById('hamburger-menu');
+
+function toggleOpen() {
+    const isOpen = sidebar.dataset.open === true;//could also just put as a global constant
+    // Toggle the dataset values
+    sidebar.dataset.isOpen = `${!isOpen}`;
+    mask.dataset.isOpen = `${!isOpen}`;
+}
+mask.addEventListener('click', () => {
+    toggleOpen();
+});
+navBtn.addEventListener('click', () => {
+    toggleOpen();
+});
+```
+ * would also want to make a fully transparent div as a "mask"...this covers the whole screen outside of the sidebar...this allows clicking outside of the sidebar to then close it asuming that `sidebar.dataset.isOpen = false`...then the css will close it
+    ```css
+    .sidebar {
+        position: fixed;     /* Lock to viewport, scrolling page doesn't move it */
+        top: 64px;           /* Under the navbar icon-bar area */
+        width: 240px;
+        height: 85vh;
+        left: -250px;/*initalized off-screen*/
+        transition: left 0.3s ease;
+    }
+    .sidebar[data-isOpen="true"] {
+        left: 0px;/*slides into view*/
+    }
+    .mask {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        background-color: rgba(0, 0, 0, 0);
+        transition: background-color 1s ease;
+    }
+
+    .mask[data-isOpen="true"] {
+        background-color: rgba(0, 0, 0, .2);
+        bottom: 0px;
+        right: 0px;
+    }
+    ```
+#### scrolling
+* **The Buggy Method (Dynamically locking body)**: You might try to block background scrolling (e.g., when a mask or sidebar opens) by using JS to dynamically set the body's **overflow** to `hidden`. This is generally a bad idea because hiding the scrollbar suddenly changes the viewport width, causing the page content to awkwardly jump horizontally.
+* **The Better Method (Moving scroll to a container)**: Instead, permanently lock the `body` and delegate scrolling to a `.container` element. This prevents the layout from shifting when you overlay a mask or open a menu.
+    * Setting body **height** to `100vh` and **overflow** to `hidden` effectively truncates anything outside the screen.
+    * Then, give the `.container` an `overflow-y: auto;` so it handles the scrolling instead.
+    * **Example with a `fixed` navbar (e.g., 90px tall):**
+      Since a `fixed` navbar is removed from the document flow, you must push the container down with `margin-top`, and calculate the remaining `max-height` to prevent the bottom from being cut off by the body's hidden overflow.
+      ```css
+      body {
+          height: 100vh;
+          overflow: hidden;
+      }
+      .container {
+          margin-top: 90px; /* Push content below the fixed nav */
+          max-height: calc(100% - 90px); /* Fill the remaining space exactly */
+          overflow-y: auto; /* Allow scrolling inside the container */
+      }
+      ```
+    * **Example with a `sticky` navbar (e.g., 90px tall):**
+      Unlike `fixed`, a `sticky` element stays in the normal document flow and inherently takes up physical space at the top. Therefore, you do NOT need a `margin-top` on the container, but you still need to limit its height so it doesn't overflow the body.
+      ```css
+      .container {
+          /* No margin-top needed because sticky nav takes up space */
+          max-height: calc(100% - 90px); 
+          overflow-y: auto; 
+      }
+      ```
+* This container approach is particularly helpful when you add a full-screen **mask** (like for a hamburger menu). Interacting with the mask naturally prevents interacting with the scrollable container behind it, effectively "disabling" scrolling without having to dynamically change overflow properties and without causing layout jumps.
+
+#### positioning
 * `position` → use `relative` mode to move relative to default position
 * may adjust position then with only (`top` OR `bottom`) and/or  (`left` OR `right`)
     * `top: 25px` moves down 25 pixels
@@ -735,7 +1038,7 @@ saveButton.addEventListener("click", () => {
     }
     ```
 * `position` → use `absolute` to position directly instead of moving
-    * NOTE that the "window" is reletive to the most direct **absolute** parent element...if none then default is the body
+    * NOTE that the "window" is reletive to the most direct **relative** parent element...if none then default is the body
     * may use both `left` AND `right` if disired to stretch element
         ```css
         #bar-at-top {
@@ -763,7 +1066,7 @@ saveButton.addEventListener("click", () => {
             z-index: 9999;
         }
         ```
-##### flexbox
+#### flexbox
 * may use `display: flex` on parent element to manipulate child elements
 * `justify-content`: (note that start and end refer to the end of the axis, the start may not be on the left or right if axis is flipped)
     * `center` → centers
@@ -801,7 +1104,7 @@ body {
     align-items: center;
 }
 ```
-###### child boxes
+##### child boxes
 * may use `flex` to size each child element using a ratio ie. 1:2:1 = 100%
     ```css
     .small-div {
@@ -814,7 +1117,7 @@ body {
 * may manually asign `order` with any integer value (-2, -1, 0, 1, 2) 
     * by default, EVERY element gets zero at the same time...agigning it -1 just moves to the left a bit
 * `align-self` → takes same values as `align-items`
-##### variables
+#### variables
 * may define a variable using `--customName` in the `:root` selector
     * use `var()` to reference the variable
     ```css
@@ -824,6 +1127,20 @@ body {
     body {
         background: var(--custom-color);
     }
+    ```
+* may also define a variable in a given element
+    ```css
+    body {
+        --custom-color: (rgb(123, 90, 20));
+        background: var(--custom-color);
+    }
+    ``` 
+* may overwrite the variable in JS using the `style.setProperty()` method on the element. First arg is the var name, second is the new value
+    * helpful so I only have to update one CSS value in JS that then CSS can reuse
+    ```js
+    document.getElementById("color-picker").addEventListener("input", e => {
+        document.body.style.setProperty("--custom-color", e.target.value);
+    });
     ```
 #### selectors
 Selectors are powerful tools to apply CSS styling rules based on HTML element types, relationships, states, or attributes.
@@ -949,6 +1266,264 @@ Select elements based on the presence or exact value of their HTML attributes.
 | `[disabled]`      | Attribute Selector (Presence)| Any element with a `disabled` attribute         |
 | `[type="submit"]` | Attribute Selector (Exact)   | Elements with the exact attribute value         |
 | `h1, h2, p`       | Grouping Selector            | All listed elements simultaneously              |
+</details>
+<details><summary>
+
+### animation
+</summary>
+
+* use `@keyframes customAnimationName` do define the animation
+* rotates with a smooth start stop to the animati
+    ```css
+    .element-to-animate {
+        animation-name: loading-animation;
+        animation-iteration-count: infinite;/*loops forever*/
+        animation-duration: 3s;/*loops again every 3 seconds*/
+    }
+    @keyframes loading-animation {
+        from {
+            transform: rotateZ(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    ```
+* add `animation-timing-function: linear` to prevent any start/stop to animation after duration is up
+    * altenative is any othe **cubic-bezier** fn...dafault is `ease`
+    ```css
+    .element-to-animate {
+        animation-name: loading-animation;
+        animation-iteration-count: infinite;
+        animation-duration: 3s;
+        animation-timing-function: linear
+    }
+    ```
+* ⚠️ may also just use `animation` instead of individual properties
+    ```css
+    .element-to-animate {
+        animation: loading-animation infinite 3s linear;
+    }
+    ```
+#### fractional animation phase
+* instead of `from` and `to`...may instead use `%`
+    ```css
+    @keyframes loading-animation {
+    0% {
+        transform: rotateZ(0deg);/*color default to element color if no color present*/
+    }
+    50% {
+        background-color: red;
+    }
+    100% {
+        transform: rotate(360deg);/*color default to element color if no color present*/
+    }
+    }
+    ```
+* no transition from 100% to 0%, must manually set color/position to be the same
+    ```css
+    @keyframes loading-animation {
+        0% {
+            transform: rotateZ(0deg);
+            background-color: yellow;
+        }
+        50% {
+            background-color: red;
+        }
+        100% {
+            transform: rotate(360deg);
+            background-color: yellow;
+        }
+    }
+    ```
+* add rotation in middle instead of end to flip rotation direction
+    ```css
+    @keyframes loading-animation {
+        0% {
+            transform: rotateZ(0deg);
+            background-color: yellow;
+        }
+        25% {
+            background-color: blue;
+        }
+        50% {
+            background-color: red;
+            transform: rotate(360deg);/*not at 100%*/
+        }
+        /*⚠️100% defaults to element default properties*/
+        }
+    }
+    ```
+#### box shadow
+* normally if there if a box shadow, the shadow will move around as well...not good
+    * solution is to move the "shadow" to a its own DIV in similar size with the shape offset by `left: -10%` and `top: 10%` when in an absolute position to a centered container as relative position
+        ```css
+        .container {
+            height: 128px;
+            width: 128px;
+            position: relative;/*needed since absolute children are absolute relative to the first parent that is set to relativ*/
+        }
+        .shadow {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background-color: black;
+            box-shadow: 0px 0px 10px black;
+            animation: spin-shadow 3s linear infinite;
+        }
+
+        .shape {
+            position: absolute;
+            left: -10%;
+            top: -10%;
+            background-color: aqua;
+            height: 100%;
+            width: 100%;
+            animation: spin-shadow 3s linear infinite;
+        }
+        @keyframes spin-shadow {
+            to {
+                transform: rotateZ(360deg);
+            }
+        }
+        ```
+#### javacript
+* moves an element to position mouse is clicked
+    ```js
+    const item = document.getElementById("item");
+
+    document.getElementById("container").addEventListener("click", e => {
+        item.animate(
+            [{//array of keyframe objects(only one keyframe object in this case)
+                transform: translate(${e.clientX - 64}px, ${e.clientY - 64}px)
+            }],
+            {//key frame properties
+                duration: 1000,//lasts one second
+                fill: "forwards",//"saves" animation...doesn't revert to original position
+                iterations: 1,
+                direction: "normal",//moves element to expected location 
+                easing: "linear",//constand speed
+                delay: 1000,
+            }
+        )
+    });
+    ```
+* For each keyframe added:
+    * Each keyframe's position specifies the percentage completion during animation duration.
+    ```js
+    - 2 keyframes:
+        Starts at 0%, then straight to 100%.
+
+    - 3 keyframes:
+        0% → start,
+        50%→ first step,
+        100%→end.
+
+    - 4 keyframes:
+        0% → first spot,
+        25% → second,
+        50%,
+        75%,
+        100% end.
+    ```
+*  Example:
+    ```js
+    const item = document.getElementById("item");
+
+    document.getElementById("container").addEventListener("click", e => {
+        item.animate(
+            [{
+                opacity: 1,
+                offset: 0.0
+            },{
+                opacity: 0,
+                offset: 0.2
+            },{
+                opacity: 1,
+                transform: translate(${e.clientX - 64}px, ${e.clientY - 64}px),
+                offset: 1.0
+            }],
+            {
+                duration: 1000,
+                fill: "forwards",
+            }
+        )
+    });
+    ```
+
+With three steps in the animation: starting at 0%, reaching each step mid-animation (at increments like 25% intervals), and ending at 100%.
+
+This way, each added keyframe splits the duration into equal parts for evenly spaced key points.
+</details>
+<details><summary>
+
+### web api
+</summary>
+
+* create server
+    ```bash
+    python -m http.server
+    ```
+    * will create server on `localhost:8000`
+    * auto shows links to all files in dir
+</details>
+<details><summary>
+
+### Google API's
+</summary>
+
+#### icons (actully a Google font)
+* instead of importing each icon with a new `<link>`, better to just add another name
+* the names must be in alpabetical order
+    * `names=delete,home,check_box` ❌ ← won't reder icon
+    * `names=check_box,delete,home` ✅
+    ```html
+    <head>
+        <title>Home</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=check_box,delete,home" />
+        <link rel="stylesheet" href="demo.css"/>
+    </head>
+    <body>
+        <span class="material-symbols-outlined"><!-- must use api given class -->
+            delete<!-- must use the text from the name="" -->
+        </span>
+        <span class="material-symbols-outlined">
+            home
+        </span>
+        <span class="material-symbols-outlined">
+            check_box
+        </span>
+    </body>
+    ```
+* may use default css, or manually change.. . refer to api for the css syntaxt
+    ```css
+    .material-symbols-outlined {
+        font-variation-settings:/
+        []
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+    ```
+* to distinguish each element, use multiple custom classes ie. `<span class="material-symbols-outlined ms-1">` `<span class="material-symbols-outlined ms-2">`
+    ```css
+    .class="material-symbols-outlined.ms-1 {
+        /* css for the element that is also ms-1 class */
+    }
+    .ms-2 {
+        /* may still also just call custom class directly
+    }
+    ```
+#### components
+get the Googles material3 website under "components"
+</details>
+<details><summary>
+
+### canvas
+</summary>
+
+body
 </details>
 <details><summary>
 

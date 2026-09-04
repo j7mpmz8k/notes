@@ -81,6 +81,7 @@ console.log("Hello, World!");
 </summary>
 
 * use `[]` for assingment ie. `let animals = ["ape", "bear", "cat", "dog"];`
+    * ⚠️ **Note on Truthiness:** Empty arrays `[]` (and empty objects `{}`) are **always truthy** in JS (unlike Python). To check if an array is empty, check its length: `myArray.length === 0`;
 
 * use `.pop()` to return and remove last value
 * use `.push()` to add new value to last in array (returns new length of array)
@@ -332,15 +333,15 @@ function displayPerson(...args) {
 }
 ```
 
-#### setTimeout()
-* asynchronous fn
-* args
-    1. call back function
-    2. delay in mill sec to execute fn
-    3. optional: args to be passed into the fn
-        * instead of manually entering the args, may instead generate a new fn that can inject them with `...args`
-        * could just directly make a fn called `delayedHello` but then I would have to rewrite the logic for the setTimeout() blending the args with main call-back
-        * by making a fn generator I can easily convert a fn like `printHello()` to become a delayed fn... of course I could also not generate any fn and just mix and match by wrapping a generic fn that can dely the fn... ie. `delay(printHello())`...the problem with this is that I have to wrap every fn I want to delay... if I have many more fn I want to wrap and/or , it would be better to genenate a pre-wrapped fn
+### asynchronous
+* `setTimeout()`
+    * args
+        1. call back function
+        2. delay in mill sec to execute fn
+        3. optional: args to be passed into the fn
+            * instead of manually entering the args, may instead generate a new fn that can inject them with `...args`
+            * could just directly make a fn called `delayedHello` but then I would have to rewrite the logic for the setTimeout() blending the args with main call-back
+            * by making a fn generator I can easily convert a fn like `printHello()` to become a delayed fn... of course I could also not generate any fn and just mix and match by wrapping a generic fn that can dely the fn... ie. `delay(printHello())`...the problem with this is that I have to wrap every fn I want to delay... if I have many more fn I want to wrap and/or , it would be better to genenate a pre-wrapped fn
         
         ```js
         //delay() returns a fn that injects the args into the callback fn
@@ -359,8 +360,190 @@ function displayPerson(...args) {
         delayedHello("Alice");
         delayedGoodbye();
         ```
-    
+* ❌ one problem is when the return value of the higher order around the asynchronous fn (ie. `setTimeout()`) in used, it will just return `undefined` since the wrapper is not asynchronous
+    ```js
+    function wait(callback, duration) {
+        setTimeout(() => {
+            callback();
+        }, duration);
+    }
+
+    function doMath() {
+        return 2 + 2;
+    }
+
+    const result = wait(doMath, 4000);//returns: undefined
+    console.log(result);
+    ```
+
+* ✅ solution is to add a wrapper between the outer fn and the asynchronous fn using `Promise` obj's which neturn a **blank** promise object, then when the asynchronous fn retuns, it is stored in the promise obj
+    * may see the state of the Promise obj under the `PromiseState` property which contains either `"pending"` or `"fulfilled"` OR `"rejected"` if error...return value updated in `PromiseResult:`
+        * `resolve()` triggers "fulfilled" state
+        * `reject()` triggers "rejected" state
+    ```js
+    function wait(callback, duration) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                const result = callback();
+                if (result !== 0) {
+                    resolve(result);//⚠️ returned if "fulfilled"
+                } else {
+                    reject("Zero is no bueno")//⚠️ returned if "rejected"
+                }
+            }, duration);
+        });
+    }
+
+    function doMath() {
+        return 2 + 2;
+    }
+
+    const result = wait(doMath, 4000);//return PromiseResult: undefined...then later updated to PromiseResult: "return value of fn" (ie. 4)
+    console.log(result);
+    ```
+    * to get the return value in `PromiseResult` only after it is in a `"fulfilled"` state, may use `.then()` method on the returned `Promise` obj
+        * param1: a callback also with one parameter being the returned result
+        * param2: anothe callback with one papmeter for the error result
+        ```js
+        function wait(callback, duration) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const result = callback();
+                    if (result !== 0) {
+                        resolve(result);
+                    } else {
+                        reject("Zero is no bueno")
+                    }
+                }, duration);
+            });
+        }
+
+        function doMath() {
+            return 0;//just an example to trigger reject()
+        }
+
+        const result = wait(doMath, 4000);
+        result.then(
+            res => console.log(res),//if "fulfilled"
+            err => console.log(err)//if "rejected"
+        );
+        ```
+#### promise chains
+* may get data from a **.txt** file with `fetch()` ←(⚠️ returns a promise obj)...also works with web api's, and other html files
+    * since `fetch()` is asynchronous must then use `then()` and **return** `.text()` on the callback param to actually get the promise value...giving another promise
+        * must then use another `then()` to get the actual contents of the .txt
+    ```js
+    const data = fetch("data.txt");//return promise object
+    const newData = data.then(result => result.text());//giver another promise
+    newData.then(result => console.log(result));
+    ```
+
+    * to clean up, may just call `data.then().then()` withou having to put on seperate lines
+        * good practice to also add `.catch()` after to catch errors
+            * nice since `.catch()` hadles the error instead of `then(result, error)`...may then just do `then(result)` with the catch
+    ```js
+    const data = fetch("data.txt");
+    data// ← is a promise obj
+        .then(res => res.text())//⚠️ remember no {} in => fn's has implicit return statement...if i added {} for multi line i would need a return statement for `res.text()`
+        .then(res => console.log(res))
+        .catch(error => console.log(error));
+    ```
+
+* if manually creating a `Promise` obj (ie. for an asynchronous fn), must then use `resolve()` and  `reject()`... which `catch()` will catch the `reject()`
+```js
+const data = new Promise((resolve, reject) => {
+    if (false) {
+        resolve("response: Success");
+    } else {
+        reject("response: Failed");//rejected since condition is false
+    }
+});
+
+data
+    .then(response => new Promise(res => res(response)))//still need the promise obj since text() was not used to auto return the Promise obj
+    .then(response => console.log(response))
+    .catch(error => console.log(error));//catches the reject()
+```
+#### async await
+* newer adition to JS
+* istead of calling `then()` on the promise obj...may instead pre-pend the promise with `await` while noting that the fn is `async`
+    ```js
+    async function getData() {
+        const res = await fetch("data.txt");//res is still a Promise obj since fetch still returns a Promise
+        const text = await res.text();//await still needed since text() also returns a promise obj
+        console.log.(text);
+    }
+    getData();
+    ```
+* be careful...if goal is to remove side effects of fn and return `text` instead of printing to console, then `text` in `getData()` when return would automatically  wapped in a pomise obj...still requires `then()` to hande the promise obj
+    ```js
+    async function getData() {
+        const res = await fetch("data.txt");
+        const text = await res.text();
+        return text;//auto wrapped in Promise obj because of "async"
+    }
+    //console.log(getData()) ← would be an pending Promise obj
+    getData().then(res => console.log(res));
+    ```
+* to then handle the reject() in the promise or a manually thrown error, should then put in try/catch block
+    ```js
+    async function getData() {
+        try {
+            const res = await fetch("http://localhost:8001/data.txt");//example error... assuming port 8001 does not exist
+            const text = await res.text();
+            return text;
+        } catch(error) {
+            throw error;
+        }
+    }
+    getData().then(res => console.log(res), err => console.log(err));//since this is not using catch I'm using the second parameter to catch errors for me
+    ```
  
+* 🛠️ **Debugging Benefit:** Unlike `.then()` promise chains where code execution jumps around asynchronously, `async/await` executes sequentially. This allows you to use standard line-by-line debugging (`debugger;` or breakpoints in DevTools) and step over asynchronous operations just like normal, synchronous code.
+
+</details>
+<details><summary>
+
+#### web api
+</summary>
+
+* may use `fetch()` to get a promis obj of the web api
+* then use `.text()` method on returned fetched promise obj to return another promise obj of the json formatted string from the json web api
+* use `JSON.parse()` with the promise obj returned from `.text()` as fn parameter...this return a JS obj
+    * ⚠️ note this is inside an [] array...with the json obj being the only idx
+```js
+async function getQuote() {
+    const result = await fetch("http://api.quotable.io/quotes/random");
+    const data = await result.text();
+    const jsonData = JSON.parse(data);
+    console.log(jsonData[0])
+}
+getQuote();
+```
+
+* fortunatey, the promise obj already has a `.json()` method...may use than to consolidate logic
+```js
+async function getQuote() {
+    const result = await fetch("http://api.quotable.io/quotes/random");
+    const data = await result.json();
+    console.log(data[0])
+}
+getQuote();
+```
+* may also reverse the json object into a json formatted string using `JSON.stringify()`
+
+* ❌ NEVER use `.innerHTML` of HTML element to any part of said json obj to HTML
+* ✅ should do `.innerText` of HTML element for text
+    ```js
+    async function getQuote() {
+        const result = await fetch("http://api.quotable.io/quotes/random");
+        const data = await result.json();
+
+        document.getElementById("quote-content").innerText = data[0].content;
+    }
+
+    getQuote();
+    ```
 </details>
 <details><summary>
 
